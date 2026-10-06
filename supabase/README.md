@@ -38,13 +38,12 @@ Todo está en migraciones SQL; nada se crea a mano desde el panel.
 ## Cuentas
 
 Cada cuenta de Supabase Auth crea su perfil sola. El nombre se toma de
-`user_metadata.nombre` y el rol de `app_metadata.rol` (`admin` o `empleada`, por
-omisión `empleada`). Para el primer administrador, después de crear su cuenta en el
-panel de Supabase:
+`user_metadata.nombre` y el rol de `app_metadata.rol` (`admin` o `empleada`), que solo
+se puede poner con la llave de servicio. Una cuenta sin rol queda desactivada, así que
+aunque alguien se registre por su cuenta no ve nada.
 
-```sql
-update perfiles set rol = 'admin' where correo = 'correo@del-admin';
-```
+El administrador crea las cuentas desde la página (Administración > Usuarios). Eso usa
+la función `functions/crear-cuenta`, que manda la invitación por correo.
 
 ## Pruebas
 
@@ -55,12 +54,35 @@ supabase/pruebas/correr.sh
 Levanta un Postgres temporal (necesita PostgreSQL 15 o más), simula lo mínimo de
 Supabase, aplica las migraciones y revisa reglas de lealtad y permisos.
 
-## Subir a Supabase
+## Crear el proyecto en Supabase
 
-```sh
-npx supabase link --project-ref <ref-del-proyecto>
-npx supabase db push
-```
+1. En [supabase.com](https://supabase.com) crea un proyecto (plan gratuito). Guarda la
+   contraseña de la base de datos.
+2. Desde la raíz del repo, sube las migraciones y la función que crea cuentas:
+
+   ```sh
+   npx supabase login
+   npx supabase link --project-ref <ref-del-proyecto>
+   npx supabase db push
+   npx supabase functions deploy crear-cuenta
+   ```
+
+3. En **Authentication > Sign In / Providers**, apaga "Allow new users to sign up"
+   (no hay registro público).
+4. En **Authentication > URL Configuration**, pon la dirección de la página como Site URL
+   y agrega `<dirección>/contrasena` en Redirect URLs.
+5. Crea la primera cuenta de administrador en **Authentication > Users > Add user** y
+   luego, en el SQL Editor:
+
+   ```sql
+   update auth.users set raw_app_meta_data = raw_app_meta_data || '{"rol":"admin"}'
+   where email = 'correo@del-admin';
+   ```
+
+6. Copia `web/.env.example` como `web/.env.local` con la URL y la llave `anon` del
+   proyecto (Project Settings > API).
+
+Para probar todo en tu computadora con Docker: `npx supabase start`.
 
 Al importar el Excel con los ID de cliente originales, ajusta después el contador:
 `select setval(pg_get_serial_sequence('clientes', 'id'), (select max(id) from clientes));`

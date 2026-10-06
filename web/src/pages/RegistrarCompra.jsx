@@ -19,6 +19,8 @@ export default function RegistrarCompra() {
   const [cuando, setCuando] = useState(paraInput(new Date()))
   const [foto, setFoto] = useState(null)
   const [guardada, setGuardada] = useState(null)
+  const [error, setError] = useState('')
+  const [ocupado, setOcupado] = useState(false)
 
   const c = clientes.find((x) => String(x.id) === id)
   if (!c) return <Vacio>No se encontró el cliente.</Vacio>
@@ -28,20 +30,29 @@ export default function RegistrarCompra() {
   const duplicado = ticket && compras.some((v) => !v.cancelada && v.sucursal === sucursal && v.ticket === ticket.trim())
   const sube = r.siguienteNivel && monto >= r.faltaParaSiguiente
 
-  const guardar = (e) => {
+  const guardar = async (e) => {
     e.preventDefault()
-    if (monto <= 0 || !ticket.trim() || duplicado) return
-    const nueva = agregarCompra({
-      clienteId: c.id,
-      fecha: cambiarFecha ? new Date(cuando) : new Date(),
-      sucursal,
-      total: monto,
-      ticket: ticket.trim(),
-      empleadaId: usuario.id,
-    })
+    if (monto <= 0 || !ticket.trim() || duplicado || ocupado) return
+    setOcupado(true)
+    setError('')
+    let nueva
+    try {
+      nueva = await agregarCompra({
+        clienteId: c.id,
+        fecha: cambiarFecha ? new Date(cuando) : new Date(),
+        sucursal,
+        total: monto,
+        ticket: ticket.trim(),
+        empleadaId: usuario.id,
+        archivo: foto,
+      })
+    } catch (err) {
+      setOcupado(false)
+      return setError(`No se pudo guardar la venta: ${err.message}`)
+    }
     // Resumen con la compra nueva, para el mensaje de WhatsApp.
     const despues = resumenCliente(
-      [...compras.filter((v) => v.clienteId === c.id), nueva],
+      [...compras.filter((v) => v.clienteId === c.id && v.id !== nueva.id), nueva],
       canjes.filter((v) => v.clienteId === c.id),
       reglas,
     )
@@ -103,12 +114,13 @@ export default function RegistrarCompra() {
             Número de ticket
             <input inputMode="numeric" required value={ticket} onChange={(e) => setTicket(e.target.value)} />
           </label>
+          {error && <p className="error">{error}</p>}
           {duplicado && <p className="error">El ticket {ticket} ya está registrado en {sucursal}. Revisa el número.</p>}
 
           <label className="archivo">
             Foto del ticket (opcional)
-            <input type="file" accept="image/*" capture="environment" onChange={(e) => setFoto(e.target.files[0]?.name ?? null)} />
-            {foto && <small>📎 {foto}</small>}
+            <input type="file" accept="image/*" capture="environment" onChange={(e) => setFoto(e.target.files[0] ?? null)} />
+            {foto && <small>📎 {foto.name}</small>}
           </label>
 
           <div className="fila-fecha">
@@ -127,7 +139,7 @@ export default function RegistrarCompra() {
             {sube && <small className="estado-ok">Con esta compra sube a {r.siguienteNivel}.</small>}
           </div>
 
-          <button className="btn btn-primario btn-bloque btn-grande" disabled={monto <= 0 || !ticket.trim() || duplicado}>Guardar venta</button>
+          <button className="btn btn-primario btn-bloque btn-grande" disabled={monto <= 0 || !ticket.trim() || duplicado || ocupado}>{ocupado ? 'Guardando…' : 'Guardar venta'}</button>
         </form>
       </Tarjeta>
     </div>

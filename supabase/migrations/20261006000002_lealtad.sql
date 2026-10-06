@@ -15,17 +15,19 @@ $$;
 
 -- Perfil automático al crear una cuenta ---------------------------------
 -- El nombre llega en user_metadata y el rol en app_metadata (este último
--- solo lo puede poner el administrador con la llave de servicio).
+-- solo lo puede poner el administrador con la llave de servicio). Una cuenta
+-- sin rol, por ejemplo si alguien se registra solo, queda desactivada.
 
 create function public.crear_perfil() returns trigger
 language plpgsql security definer set search_path = public as $$
 begin
-  insert into perfiles (id, nombre, correo, rol)
+  insert into perfiles (id, nombre, correo, rol, activa)
   values (
     new.id,
     coalesce(nullif(new.raw_user_meta_data ->> 'nombre', ''), split_part(new.email, '@', 1)),
     new.email,
-    coalesce((new.raw_app_meta_data ->> 'rol')::rol, 'empleada')
+    case when new.raw_app_meta_data ->> 'rol' = 'admin' then 'admin' else 'empleada' end::rol,
+    coalesce(new.raw_app_meta_data ->> 'rol' in ('admin', 'empleada'), false)
   );
   return new;
 end;
@@ -33,6 +35,22 @@ $$;
 
 create trigger crear_perfil after insert on auth.users
 for each row execute function public.crear_perfil();
+
+-- Supabase guarda app_metadata después de crear el usuario, así que el rol
+-- también se copia (y la cuenta se activa) cuando cambia.
+create function public.actualizar_rol() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  if new.raw_app_meta_data ->> 'rol' in ('admin', 'empleada') then
+    update perfiles set rol = (new.raw_app_meta_data ->> 'rol')::rol, activa = true where id = new.id;
+  end if;
+  return new;
+end;
+$$;
+
+create trigger actualizar_rol after update of raw_app_meta_data on auth.users
+for each row when (old.raw_app_meta_data ->> 'rol' is distinct from new.raw_app_meta_data ->> 'rol')
+execute function public.actualizar_rol();
 
 -- Clientes -------------------------------------------------------------
 
@@ -297,7 +315,7 @@ for each row execute function public.antes_de_guardar_canje();
 -- nivel, puntos y vigencia. Las tablas siguen cerradas.
 
 create function public.tarjeta_publica(p_token uuid)
-returns table (nombre text, nivel text, puntos integer, pesos_canje numeric, vigencia timestamptz)
+returns table (nombre text, nivel text, puntos integer, pesos_canje numeric, minimo_canje integer, vigencia timestamptz)
 language plpgsql stable security definer set search_path = public as $$
 declare
   cli clientes;
@@ -311,7 +329,7 @@ begin
   select * into cfg from configuracion;
   select * into r from recorrer_cliente(cli.id);
   return query
-    select split_part(cli.nombre, ' ', 1), n.nombre, r.puntos, r.puntos * cfg.valor_punto,
+    select split_part(cli.nombre, ' ', 1), n.nombre, r.puntos, r.puntos * cfg.valor_punto, cfg.minimo_canje,
       case when r.puntos > 0 then r.ultima_compra + make_interval(months => cfg.vigencia_meses) end
     from niveles n order by n.desde offset r.nivel_indice - 1 limit 1;
 end;

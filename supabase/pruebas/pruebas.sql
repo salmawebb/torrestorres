@@ -41,14 +41,19 @@ set client_min_messages = notice;
 -- Cuentas: el perfil se crea solo, con el rol de app_metadata.
 insert into auth.users (email, raw_user_meta_data, raw_app_meta_data) values
   ('admin@torrestorres.mx', '{"nombre":"Rosa Torres"}', '{"rol":"admin"}'),
-  ('lupita@torrestorres.mx', '{"nombre":"Lupita Garza"}', '{}'),
+  ('lupita@torrestorres.mx', '{"nombre":"Lupita Garza"}', '{"rol":"empleada"}'),
   ('karla@torrestorres.mx', '{"nombre":"Karla Méndez","rol":"admin"}', '{}'),
-  ('monica@torrestorres.mx', '{"nombre":"Mónica Salas"}', '{}');
+  ('monica@torrestorres.mx', '{"nombre":"Mónica Salas"}', '{"rol":"empleada"}');
 update perfiles set activa = false where correo = 'monica@torrestorres.mx';
 
 select pruebas.verifica((select rol from perfiles where correo = 'admin@torrestorres.mx') = 'admin', 'el admin se crea con rol admin');
-select pruebas.verifica((select rol from perfiles where correo = 'karla@torrestorres.mx') = 'empleada',
-  'el rol en user_metadata (editable por el usuario) no da permisos de admin');
+select pruebas.verifica((select rol = 'empleada' and not activa from perfiles where correo = 'karla@torrestorres.mx'),
+  'una cuenta sin rol en app_metadata (p. ej. registro por su cuenta) queda desactivada y sin admin');
+insert into auth.users (email) values ('nueva@torrestorres.mx');
+update auth.users set raw_app_meta_data = '{"provider":"email","rol":"admin"}' where email = 'nueva@torrestorres.mx';
+select pruebas.verifica((select rol = 'admin' and activa from perfiles where correo = 'nueva@torrestorres.mx'),
+  'el rol puesto después en app_metadata llega al perfil y la activa');
+delete from auth.users where email = 'nueva@torrestorres.mx';
 
 -- Empleada: registra cliente y compras --------------------------------------
 

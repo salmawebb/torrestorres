@@ -9,11 +9,11 @@ import './estilos.css'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
-      <DatosProvider>
-        <SesionProvider>
+      <SesionProvider>
+        <DatosProvider>
           <App />
-        </SesionProvider>
-      </DatosProvider>
+        </DatosProvider>
+      </SesionProvider>
     </BrowserRouter>
   </StrictMode>,
 )
