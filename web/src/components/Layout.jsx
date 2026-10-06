@@ -1,0 +1,72 @@
+import { useState } from 'react'
+import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { useSesion } from '../context/Sesion'
+
+const MENU = [
+  { a: '/', texto: 'Inicio', icono: '⌂', fin: true },
+  { a: '/clientes', texto: 'Clientes', icono: '☺' },
+  { a: '/ventas', texto: 'Ventas', icono: '▤' },
+  { a: '/canjes', texto: 'Canjes', icono: '★' },
+  { a: '/empleadas', texto: 'Empleadas', icono: '◉', admin: true },
+  { a: '/reportes', texto: 'Reportes', icono: '▲', admin: true },
+  { a: '/administracion', texto: 'Administración', icono: '⚙', admin: true },
+]
+
+export function Marca({ chica }) {
+  return (
+    <div className={`marca ${chica ? 'marca-chica' : ''}`}>
+      <svg viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M16 5l8 8-8 14-8-14z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+        <path d="M8 13h16M12.5 13L16 27l3.5-14M12 5.5L12.5 13M20 5.5l-.5 7.5" fill="none" stroke="currentColor" strokeWidth="1.2" />
+      </svg>
+      <div>
+        <span className="marca-nombre">Torres Torres</span>
+        {!chica && <span className="marca-sub">Joyería</span>}
+      </div>
+    </div>
+  )
+}
+
+export default function Layout() {
+  const { usuario, sucursal, esAdmin, salir } = useSesion()
+  const [menuAbierto, setMenuAbierto] = useState(false)
+  const navigate = useNavigate()
+  const opciones = MENU.filter((m) => !m.admin || esAdmin)
+
+  return (
+    <div className="app">
+      <header className="barra">
+        <button className="btn-icono solo-movil" onClick={() => setMenuAbierto(true)} aria-label="Abrir menú">☰</button>
+        <Marca chica />
+        <div className="barra-derecha">
+          <button className="chip-sucursal" onClick={() => navigate('/sucursal')} title="Cambiar sucursal">
+            📍 {sucursal}
+          </button>
+          <span className="barra-usuario solo-escritorio">{usuario.nombre}</span>
+        </div>
+      </header>
+
+      <div className="cuerpo">
+        <nav className={`menu ${menuAbierto ? 'abierto' : ''}`} onClick={() => setMenuAbierto(false)}>
+          <div className="menu-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="menu-usuario">
+              <strong>{usuario.nombre}</strong>
+              <span>{esAdmin ? 'Administrador' : 'Empleada'} · {sucursal}</span>
+            </div>
+            {opciones.map((m) => (
+              <NavLink key={m.a} to={m.a} end={m.fin} onClick={() => setMenuAbierto(false)}>
+                <span className="menu-icono" aria-hidden="true">{m.icono}</span>
+                {m.texto}
+              </NavLink>
+            ))}
+            <button className="menu-salir" onClick={salir}>Cerrar sesión</button>
+          </div>
+        </nav>
+
+        <main className="contenido">
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  )
+}

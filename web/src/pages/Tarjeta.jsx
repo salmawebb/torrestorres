@@ -1,0 +1,52 @@
+import { useParams } from 'react-router-dom'
+import { QRCodeSVG } from 'qrcode.react'
+import { Marca } from '../components/Layout'
+import { useDatos } from '../context/Datos'
+import { fecha, pesos } from '../lib/formato'
+
+// Página pública que abre el cliente al escanear su QR. Solo muestra
+// nombre de pila, nivel, puntos y vigencia.
+export default function TarjetaCliente() {
+  const { token } = useParams()
+  const { clientes, resumenes, reglas } = useDatos()
+  const c = clientes.find((x) => x.token === token)
+
+  if (!c) {
+    return (
+      <div className="pantalla-tarjeta">
+        <div className="tarjeta-lealtad">
+          <Marca />
+          <p>Esta tarjeta ya no es válida. Pide la nueva en tu sucursal.</p>
+        </div>
+      </div>
+    )
+  }
+
+  const r = resumenes[c.id]
+  return (
+    <div className="pantalla-tarjeta">
+      <div className={`tarjeta-lealtad tarjeta-${r.nivel.toLowerCase()}`}>
+        <div className="tarjeta-arriba">
+          <Marca />
+          <span className="tarjeta-nivel">{r.nivel}</span>
+        </div>
+        <p className="tarjeta-hola">Hola, {c.nombre}</p>
+        <div className="tarjeta-puntos">
+          <span>{r.puntos}</span>
+          <small>puntos</small>
+        </div>
+        <p className="tarjeta-detalle">
+          {r.puedeCanjear
+            ? `Puedes canjearlos por ${pesos(r.pesosCanje)} en tu próxima compra.`
+            : `Te faltan ${reglas.minimoCanje - r.puntos} puntos para tu primer canje.`}
+        </p>
+        <p className="tarjeta-detalle">{r.vigencia ? `Vigentes hasta el ${fecha(r.vigencia)}` : 'Sin puntos vigentes'}</p>
+        <div className="tarjeta-qr">
+          <QRCodeSVG value={window.location.href} size={168} />
+          <small>Muestra este código en tienda</small>
+        </div>
+      </div>
+      <p className="tarjeta-pie">Joyería Torres Torres · Allende · Olmos · Hidalgo</p>
+    </div>
+  )
+}

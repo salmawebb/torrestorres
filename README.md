@@ -9,4 +9,4 @@ Repositorio del proyecto de sistemas de la joyería Torres Torres.
 
 ## Estado
 
-Proyecto en etapa inicial. Todavía no hay código.
+- `web/`: interfaz de la página web (React + Vite). Ver [web/README.md](web/README.md).
