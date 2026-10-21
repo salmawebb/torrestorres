@@ -23,6 +23,13 @@ Abre http://localhost:5173. En modo demo entra con los botones "Entrar como empl
 "Entrar como administrador", o con un correo de ejemplo como `lupita@torrestorres.mx` y
 cualquier contraseña. Con Supabase, entra con una cuenta creada por el administrador.
 
+## Publicar en GitHub Pages
+
+Cada cambio en `main` se publica solo en https://salmawebb.github.io/torrestorres/
+(workflow `.github/workflows/pages.yml`). Para que use la base de datos real, agrega en
+GitHub los secretos `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`
+(Settings > Secrets and variables > Actions); sin ellos sale en modo demo.
+
 ## Pantallas
 
 | Ruta | Quién | Qué hace |
