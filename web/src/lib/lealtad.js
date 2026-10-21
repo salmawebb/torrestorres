@@ -1,3 +1,5 @@
+import { urlPagina } from './formato'
+
 // Reglas del programa de lealtad (documento "Sistema de ventas y lealtad").
 // En la versión final estas reglas vendrán de la tabla de configuración;
 // aquí son los valores iniciales que maneja el negocio.
@@ -102,4 +104,4 @@ export function enlaceWhatsApp(telefono, texto) {
   return `https://wa.me/${telefono}?text=${encodeURIComponent(texto)}`
 }
 
-export const enlaceTarjeta = (token) => `${window.location.origin}/tarjeta/${token}`
+export const enlaceTarjeta = (token) => urlPagina(`tarjeta/${token}`)

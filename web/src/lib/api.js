@@ -1,3 +1,4 @@
+import { urlPagina } from './formato'
 import { supabase } from './supabase'
 
 // Acceso a Supabase. Convierte las filas de la base al formato que usan las
@@ -178,7 +179,7 @@ export async function cambiarActiva(id, activa) {
 // crear-cuenta de Supabase (supabase/functions/crear-cuenta).
 export async function crearCuenta({ nombre, correo, rol }) {
   const { error } = await supabase.functions.invoke('crear-cuenta', {
-    body: { nombre, correo, rol, redirigir: `${window.location.origin}/contrasena` },
+    body: { nombre, correo, rol, redirigir: urlPagina('contrasena') },
   })
   if (error) {
     const detalle = await error.context?.json?.().catch(() => null)
@@ -187,7 +188,7 @@ export async function crearCuenta({ nombre, correo, rol }) {
 }
 
 export async function enviarRecuperacion(correo) {
-  fallo(await supabase.auth.resetPasswordForEmail(correo, { redirectTo: `${window.location.origin}/contrasena` }))
+  fallo(await supabase.auth.resetPasswordForEmail(correo, { redirectTo: urlPagina('contrasena') }))
 }
 
 export async function tarjetaPublica(token) {

@@ -44,3 +44,6 @@ export const cumpleEnSemana = (ddmm, hoy = new Date()) => {
   }
   return null
 }
+
+// Dirección completa de una ruta de la página, contando la carpeta donde está publicada.
+export const urlPagina = (ruta) => `${window.location.origin}${import.meta.env.BASE_URL}${ruta}`
