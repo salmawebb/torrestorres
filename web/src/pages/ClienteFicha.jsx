@@ -16,6 +16,16 @@ export default function ClienteFicha() {
   const [aviso, setAviso, cerrarAviso] = useAviso()
   const [pestana, setPestana] = useState('compras')
 
+  // Guarda en la base y avisa el resultado (o el error, p. ej. sin conexión).
+  const intentar = async (accion, mensaje) => {
+    try {
+      await accion()
+      setAviso(mensaje)
+    } catch (e) {
+      setAviso(`No se pudo guardar: ${e.message}`)
+    }
+  }
+
   const c = clientes.find((x) => String(x.id) === id)
   if (!c) return <Vacio>No se encontró el cliente.</Vacio>
   const r = resumenes[c.id]
@@ -129,9 +139,11 @@ export default function ClienteFicha() {
         reglas={reglas}
         onCerrar={() => setCanjeando(false)}
         onCanjear={(puntos) => {
-          agregarCanje({ clienteId: c.id, fecha: new Date(), sucursal, puntos, pesos: puntos * reglas.valorPunto, empleadaId: usuario.id })
           setCanjeando(false)
-          setAviso(`Canje registrado: ${puntos} puntos = ${pesos(puntos * reglas.valorPunto)} de descuento.`)
+          intentar(
+            () => agregarCanje({ clienteId: c.id, fecha: new Date(), sucursal, puntos, pesos: puntos * reglas.valorPunto, empleadaId: usuario.id }),
+            `Canje registrado: ${puntos} puntos = ${pesos(puntos * reglas.valorPunto)} de descuento.`,
+          )
         }}
       />
 
@@ -139,7 +151,7 @@ export default function ClienteFicha() {
         <p>El QR que tiene el cliente dejará de funcionar al instante. Úsalo si perdió su celular o compartió su tarjeta por error. Después mándale la tarjeta nueva por WhatsApp.</p>
         <div className="modal-acciones">
           <button className="btn btn-secundario" onClick={() => setRegenerando(false)}>No, dejarlo</button>
-          <button className="btn btn-primario" onClick={() => { regenerarToken(c.id); setRegenerando(false); setAviso('Se generó un QR nuevo.') }}>Generar QR nuevo</button>
+          <button className="btn btn-primario" onClick={() => { setRegenerando(false); intentar(() => regenerarToken(c.id), 'Se generó un QR nuevo.') }}>Generar QR nuevo</button>
         </div>
       </Modal>
 
@@ -150,7 +162,7 @@ export default function ClienteFicha() {
             <p className="ayuda">Solo para errores de captura. Los puntos y el nivel del cliente se recalculan solos.</p>
             <div className="modal-acciones">
               <button className="btn btn-secundario" onClick={() => setCancelando(null)}>No cancelar</button>
-              <button className="btn btn-peligro" onClick={() => { cancelarCompra(cancelando.id); setCancelando(null); setAviso('Venta cancelada.') }}>Cancelar venta</button>
+              <button className="btn btn-peligro" onClick={() => { setCancelando(null); intentar(() => cancelarCompra(cancelando.id), 'Venta cancelada.') }}>Cancelar venta</button>
             </div>
           </>
         )}

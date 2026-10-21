@@ -33,13 +33,27 @@ export default function Administracion() {
 }
 
 function Usuarios({ setAviso }) {
-  const { usuarios, actualizarUsuarios } = useDatos()
+  const { usuarios, crearCuenta, cambiarActiva, enviarRecuperacion } = useDatos()
   const [nuevo, setNuevo] = useState(null)
-  const alternar = (id) => actualizarUsuarios(usuarios.map((u) => (u.id === id ? { ...u, activa: !u.activa } : u)))
-  const crear = (e) => {
+  const [ocupado, setOcupado] = useState(false)
+  const intentar = async (accion, mensaje) => {
+    try {
+      await accion()
+      setAviso(mensaje)
+    } catch (e) {
+      setAviso(`No se pudo completar: ${e.message}`)
+    }
+  }
+  const alternar = (u) => intentar(() => cambiarActiva(u.id, !u.activa), u.activa ? `${u.nombre} ya no puede entrar.` : `${u.nombre} puede entrar de nuevo.`)
+  const restablecer = (u) => intentar(() => enviarRecuperacion(u.correo), `Se envió a ${u.correo} un enlace para restablecer la contraseña.`)
+  const crear = async (e) => {
     e.preventDefault()
-    actualizarUsuarios([...usuarios, { ...nuevo, id: `u${Date.now()}`, activa: true }])
-    setAviso(`Se creó la cuenta de ${nuevo.nombre}. Le llegará un correo para poner su contraseña.`)
+    setOcupado(true)
+    await intentar(
+      () => crearCuenta({ nombre: nuevo.nombre.trim(), correo: nuevo.correo.trim().toLowerCase(), rol: nuevo.rol }),
+      `Se creó la cuenta de ${nuevo.nombre}. Le llegará un correo para poner su contraseña.`,
+    )
+    setOcupado(false)
     setNuevo(null)
   }
   return (
@@ -56,8 +70,8 @@ function Usuarios({ setAviso }) {
                 <td>{u.rol === 'admin' ? 'Administrador' : 'Empleada'}</td>
                 <td>{u.activa ? 'Activa' : 'Desactivada'}</td>
                 <td className="acciones-fila">
-                  <button className="enlace" onClick={() => setAviso(`Se envió a ${u.correo} un enlace para restablecer la contraseña.`)}>Restablecer contraseña</button>
-                  {u.rol !== 'admin' && <button className="enlace" onClick={() => alternar(u.id)}>{u.activa ? 'Desactivar' : 'Activar'}</button>}
+                  <button className="enlace" onClick={() => restablecer(u)}>Restablecer contraseña</button>
+                  {u.rol !== 'admin' && <button className="enlace" onClick={() => alternar(u)}>{u.activa ? 'Desactivar' : 'Activar'}</button>}
                 </td>
               </tr>
             ))}
@@ -76,7 +90,7 @@ function Usuarios({ setAviso }) {
                 <option value="admin">Administrador</option>
               </select>
             </label>
-            <button className="btn btn-primario btn-bloque">Crear cuenta</button>
+            <button className="btn btn-primario btn-bloque" disabled={ocupado}>Crear cuenta</button>
           </form>
         )}
       </Modal>
@@ -85,13 +99,21 @@ function Usuarios({ setAviso }) {
 }
 
 function Lealtad({ setAviso }) {
-  const { reglas, setReglas } = useDatos()
+  const { reglas, guardarReglas } = useDatos()
   const [f, setF] = useState(reglas)
   const num = (k) => (e) => setF({ ...f, [k]: Number(e.target.value) })
   const nivel = (i, k) => (e) => setF({ ...f, niveles: f.niveles.map((n, j) => (j === i ? { ...n, [k]: Number(e.target.value) } : n)) })
   return (
     <Tarjeta titulo="Reglas del programa">
-      <form className="formulario" onSubmit={(e) => { e.preventDefault(); setReglas(f); setAviso('Reglas guardadas. Las compras ya registradas conservan sus puntos.') }}>
+      <form className="formulario" onSubmit={async (e) => {
+        e.preventDefault()
+        try {
+          await guardarReglas(f)
+          setAviso('Reglas guardadas. Las compras ya registradas conservan sus puntos.')
+        } catch (err) {
+          setAviso(`No se pudieron guardar las reglas: ${err.message}`)
+        }
+      }}>
         <div className="fila-4">
           <label>Bloque de compra ($)<input type="number" min="1" value={f.bloquePesos} onChange={num('bloquePesos')} /></label>
           <label>Valor del punto ($)<input type="number" min="0" step="0.01" value={f.valorPunto} onChange={num('valorPunto')} /></label>

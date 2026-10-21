@@ -17,26 +17,35 @@ export default function ClienteNuevo() {
   const inicial = params.get('telefono') ?? ''
   const [f, setF] = useState({ nombre: '', apellidos: '', telefono: /\d/.test(inicial) ? inicial : '', dia: '', mes: '', notas: '' })
   const [creado, setCreado] = useState(null)
+  const [error, setError] = useState('')
+  const [ocupado, setOcupado] = useState(false)
   const cambiar = (k) => (e) => setF({ ...f, [k]: e.target.value })
 
   const tel = normalizarTelefono(f.telefono)
   const telValido = tel.length === 12
   const existente = telValido && clientes.find((c) => c.telefono === tel)
 
-  const guardar = (e) => {
+  const guardar = async (e) => {
     e.preventDefault()
-    if (!telValido || existente) return
-    const nuevo = agregarCliente(
-      {
-        nombre: f.nombre.trim(),
-        apellidos: f.apellidos.trim(),
-        telefono: tel,
-        cumpleanos: f.dia && f.mes ? `${f.dia.padStart(2, '0')}/${f.mes.padStart(2, '0')}` : '—',
-        notas: f.notas.trim(),
-      },
-      usuario.id,
-    )
-    setCreado(nuevo)
+    if (!telValido || existente || ocupado) return
+    setOcupado(true)
+    setError('')
+    try {
+      const nuevo = await agregarCliente(
+        {
+          nombre: f.nombre.trim(),
+          apellidos: f.apellidos.trim(),
+          telefono: tel,
+          cumpleanos: f.dia && f.mes ? `${f.dia.padStart(2, '0')}/${f.mes.padStart(2, '0')}` : '—',
+          notas: f.notas.trim(),
+        },
+        usuario.id,
+      )
+      setCreado(nuevo)
+    } catch (err) {
+      setError(`No se pudo registrar: ${err.message}`)
+    }
+    setOcupado(false)
   }
 
   if (creado) {
@@ -91,7 +100,8 @@ export default function ClienteNuevo() {
             </label>
           </fieldset>
           <label>Notas<textarea rows="2" value={f.notas} onChange={cambiar('notas')} /></label>
-          <button className="btn btn-primario btn-bloque btn-grande" disabled={!telValido || !!existente}>Registrar cliente</button>
+          {error && <p className="error">{error}</p>}
+          <button className="btn btn-primario btn-bloque btn-grande" disabled={!telValido || !!existente || ocupado}>Registrar cliente</button>
         </form>
       </Tarjeta>
     </div>

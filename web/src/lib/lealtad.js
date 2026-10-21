@@ -58,8 +58,9 @@ export function resumenCliente(compras, canjes, reglas = REGLAS_INICIALES, hoy =
   for (const e of eventos) {
     aplicarVencimiento(e.fecha)
     if (e.tipo === 'compra') {
-      const ganados = puntosPorCompra(e.dato.total, nivel, reglas)
-      puntosPorCompraId[e.dato.id] = { puntos: ganados, nivel: reglas.niveles[nivel].nombre }
+      // Con la base de datos, cada compra ya trae los puntos y el nivel con que se guardó.
+      const ganados = e.dato.puntos ?? puntosPorCompra(e.dato.total, nivel, reglas)
+      puntosPorCompraId[e.dato.id] = { puntos: ganados, nivel: e.dato.nivel ?? reglas.niveles[nivel].nombre }
       puntos += ganados
       acumulado += e.dato.total
       const siguiente = reglas.niveles[nivel + 1]

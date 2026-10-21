@@ -2,18 +2,17 @@ import { Link } from 'react-router-dom'
 import BuscarCliente from '../components/BuscarCliente'
 import { Dato, NivelBadge, Tarjeta, Vacio } from '../components/Comunes'
 import Ranking from '../components/Ranking'
-import { SUCURSALES } from '../data/mock'
 import { useDatos } from '../context/Datos'
 import { fecha, inicioDeSemana, inicioDelDia, pesos, sumarDias } from '../lib/formato'
 import { cercaDeSubir, duplicados, porVencer, ranking } from '../lib/reportes'
 
 export default function InicioAdmin() {
-  const { compras, usuarios, clientes, resumenes } = useDatos()
+  const { compras, usuarios, clientes, resumenes, sucursales } = useDatos()
   const activas = compras.filter((v) => !v.cancelada)
   const suma = (l) => ({ total: l.reduce((s, v) => s + v.total, 0), n: l.length })
   const hoy = inicioDelDia()
   const semana = inicioDeSemana()
-  const porSucursal = SUCURSALES.map((s) => ({
+  const porSucursal = sucursales.map((s) => ({
     s,
     hoy: suma(activas.filter((v) => v.sucursal === s && v.fecha >= hoy)),
     semana: suma(activas.filter((v) => v.sucursal === s && v.fecha >= semana)),

@@ -1,12 +1,13 @@
-import { SUCURSALES } from '../data/mock'
+import { useDatos } from '../context/Datos'
 
 export function FiltroSucursal({ valor, onChange }) {
+  const { sucursales } = useDatos()
   return (
     <label>
       Sucursal
       <select value={valor} onChange={(e) => onChange(e.target.value)}>
         <option>Todas</option>
-        {SUCURSALES.map((s) => <option key={s}>{s}</option>)}
+        {sucursales.map((s) => <option key={s}>{s}</option>)}
       </select>
     </label>
   )
