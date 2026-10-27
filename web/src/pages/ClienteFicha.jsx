@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Aviso, Dato, Modal, NivelBadge, Tarjeta, useAviso, Vacio } from '../components/Comunes'
+import BotonImagenTarjeta from '../components/ImagenTarjeta'
 import { useDatos } from '../context/Datos'
 import { useSesion } from '../context/Sesion'
 import { fecha, pesos, telefono } from '../lib/formato'
@@ -76,6 +77,7 @@ export default function ClienteFicha() {
 
         <div className="ficha-tarjeta">
           <Link to={`/tarjeta/${c.token}`} target="_blank">Ver tarjeta del cliente ↗</Link>
+          <BotonImagenTarjeta nombre={c.nombre} enlace={enlaceTarjeta(c.token)} className="enlace">Descargar imagen de la tarjeta</BotonImagenTarjeta>
           <button className="enlace" onClick={() => setRegenerando(true)}>Generar QR nuevo</button>
         </div>
         {c.notas && <p className="ficha-notas">📝 {c.notas}</p>}

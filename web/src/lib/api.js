@@ -204,5 +204,7 @@ export async function tarjetaPublica(token) {
     puedeCanjear: f.puntos >= f.minimo_canje,
     minimoCanje: f.minimo_canje,
     vigencia: f.vigencia ? new Date(f.vigencia) : null,
+    siguienteNivel: f.siguiente_nivel,
+    faltaParaSiguiente: f.falta_para_siguiente == null ? null : Number(f.falta_para_siguiente),
   }
 }

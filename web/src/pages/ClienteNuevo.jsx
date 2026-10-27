@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { QRCodeSVG } from 'qrcode.react'
 import { Tarjeta } from '../components/Comunes'
+import BotonImagenTarjeta from '../components/ImagenTarjeta'
 import { useDatos } from '../context/Datos'
 import { useSesion } from '../context/Sesion'
 import { normalizarTelefono } from '../lib/formato'
@@ -59,6 +60,7 @@ export default function ClienteNuevo() {
           <p>{creado.nombre} {creado.apellidos} · #{creado.id}</p>
           <div className="qr-chico"><QRCodeSVG value={enlace} size={140} /></div>
           <a className="btn btn-whatsapp btn-bloque" href={enlaceWhatsApp(creado.telefono, texto)} target="_blank" rel="noreferrer">Enviar tarjeta por WhatsApp</a>
+          <BotonImagenTarjeta nombre={creado.nombre} enlace={enlace} className="btn btn-secundario btn-bloque" />
           <div className="modal-acciones">
             <Link to={`/clientes/${creado.id}`} className="btn btn-secundario">Ver ficha</Link>
             <button className="btn btn-primario" onClick={() => navigate(`/clientes/${creado.id}/compra`)}>Seguir con la venta</button>
