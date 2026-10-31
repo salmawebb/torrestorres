@@ -32,7 +32,7 @@ export default function Ventas() {
 
   const activas = lista.filter((v) => !v.cancelada)
   const columnas = [
-    { titulo: 'Fecha', valor: (v) => `${fecha(v.fecha)} ${hora(v.fecha)}` },
+    { titulo: 'Fecha', valor: (v) => v.fecha },
     { titulo: 'Sucursal', valor: (v) => v.sucursal },
     { titulo: 'Ticket', valor: (v) => v.ticket },
     { titulo: 'Cliente', valor: (v) => `${cli(v.clienteId).nombre} ${cli(v.clienteId).apellidos}` },

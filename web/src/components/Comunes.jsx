@@ -55,22 +55,42 @@ export function Modal({ abierto, titulo, onCerrar, children }) {
 
 // Exporta a Excel lo que se ve en pantalla (con filtros). Por ahora genera un CSV
 // que Excel abre directo; con datos reales se cambiará a .xlsx.
+// Celda de Excel según el tipo del valor: números y fechas quedan como tales
+// para que se puedan sumar y ordenar en Excel.
+function celda(v) {
+  if (v instanceof Date) {
+    const conHora = v.getHours() || v.getMinutes()
+    // La librería escribe la hora en UTC; se corre para que salga la hora local.
+    const local = new Date(v.getTime() - v.getTimezoneOffset() * 60000)
+    return { value: local, type: Date, format: conHora ? 'dd/mm/yyyy hh:mm' : 'dd/mm/yyyy' }
+  }
+  if (typeof v === 'number' && Number.isFinite(v)) return { value: v, type: Number }
+  if (v === null || v === undefined || v === '') return null
+  return { value: String(v), type: String }
+}
+
 export function BotonExportar({ nombre, columnas, filas }) {
-  const exportar = () => {
-    const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`
-    const csv = [columnas.map((c) => esc(c.titulo)), ...filas.map((f) => columnas.map((c) => esc(c.valor(f))))]
-      .map((r) => r.join(','))
-      .join('\r\n')
-    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' })
-    const a = document.createElement('a')
-    a.href = URL.createObjectURL(blob)
-    a.download = `${nombre}.csv`
-    a.click()
-    URL.revokeObjectURL(a.href)
+  const [ocupado, setOcupado] = useState(false)
+  const exportar = async () => {
+    setOcupado(true)
+    try {
+      // Se carga solo al exportar, para no hacer más pesada la página.
+      const { default: writeExcelFile } = await import('write-excel-file/browser')
+      const encabezado = columnas.map((c) => ({ value: c.titulo, type: String, fontWeight: 'bold' }))
+      const datos = filas.map((f) => columnas.map((c) => celda(c.valor(f))))
+      const anchos = columnas.map((c, i) => ({
+        width: Math.min(40, Math.max(10, c.titulo.length + 2, ...datos.slice(0, 200).map((r) => String(r[i]?.value ?? '').length + 2))),
+      }))
+      await writeExcelFile([encabezado, ...datos], { columns: anchos, stickyRowsCount: 1 }).toFile(`${nombre}.xlsx`)
+    } catch {
+      alert('No se pudo crear el archivo de Excel. Intenta de nuevo.')
+    } finally {
+      setOcupado(false)
+    }
   }
   return (
-    <button className="btn btn-secundario btn-chico" onClick={exportar}>
-      ⤓ Exportar a Excel
+    <button className="btn btn-secundario btn-chico" onClick={exportar} disabled={ocupado}>
+      {ocupado ? 'Preparando…' : '⤓ Exportar a Excel'}
     </button>
   )
 }

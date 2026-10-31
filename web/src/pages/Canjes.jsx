@@ -23,7 +23,7 @@ export default function Canjes() {
     .sort((a, b) => b.fecha - a.fecha)
 
   const columnas = [
-    { titulo: 'Fecha', valor: (v) => fecha(v.fecha) },
+    { titulo: 'Fecha', valor: (v) => v.fecha },
     { titulo: 'Sucursal', valor: (v) => v.sucursal },
     { titulo: 'Cliente', valor: (v) => `${cli(v.clienteId).nombre} ${cli(v.clienteId).apellidos}` },
     { titulo: 'Puntos', valor: (v) => v.puntos },
