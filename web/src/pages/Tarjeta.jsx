@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { QRCodeSVG } from 'qrcode.react'
+import BotonImagenTarjeta from '../components/ImagenTarjeta'
 import { Marca } from '../components/Layout'
 import { useDatos } from '../context/Datos'
 import { tarjetaPublica } from '../lib/api'
+import { enlaceTarjeta } from '../lib/lealtad'
 import { fecha, pesos } from '../lib/formato'
 import { modoDemo } from '../lib/supabase'
 
@@ -28,27 +30,33 @@ export default function TarjetaCliente() {
   const r = t
   return (
     <div className="pantalla-tarjeta">
-      <div className={`tarjeta-lealtad tarjeta-${r.nivel.toLowerCase()}`}>
+      <div className="tarjeta-lealtad">
         <div className="tarjeta-arriba">
-          <Marca />
+          <Marca chica />
           <span className="tarjeta-nivel">{r.nivel}</span>
         </div>
         <p className="tarjeta-hola">Hola, {t.nombre}</p>
         <div className="tarjeta-puntos">
-          <span>{r.puntos}</span>
+          <span>{r.puntos.toLocaleString('es-MX')}</span>
           <small>puntos</small>
         </div>
-        <p className="tarjeta-detalle">
+        <p className="tarjeta-detalle tarjeta-canje">
           {r.puedeCanjear
             ? `Puedes canjearlos por ${pesos(r.pesosCanje)} en tu próxima compra.`
             : `Te faltan ${r.minimoCanje - r.puntos} puntos para tu primer canje.`}
         </p>
         <p className="tarjeta-detalle">{r.vigencia ? `Vigentes hasta el ${fecha(r.vigencia)}` : 'Sin puntos vigentes'}</p>
+        {r.siguienteNivel && (
+          <p className="tarjeta-detalle tarjeta-siguiente">Te faltan {pesos(r.faltaParaSiguiente)} en compras para {r.siguienteNivel}</p>
+        )}
         <div className="tarjeta-qr">
-          <QRCodeSVG value={window.location.href} size={168} />
+          <QRCodeSVG value={enlaceTarjeta(token)} size={150} fgColor="#111111" />
           <small>Muestra este código en tienda</small>
         </div>
       </div>
+      <BotonImagenTarjeta nombre={t.nombre} enlace={enlaceTarjeta(token)} className="tarjeta-guardar">
+        Guardar mi tarjeta en el celular
+      </BotonImagenTarjeta>
       <p className="tarjeta-pie">Joyería Torres Torres · Allende · Olmos · Hidalgo</p>
     </div>
   )
