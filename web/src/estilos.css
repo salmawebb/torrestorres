@@ -47,13 +47,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 small { color: var(--tinta-suave); }
 
 /* ---------- Marca ---------- */
-.marca { display: flex; align-items: center; gap: 10px; color: var(--oro); }
-.marca svg { width: 40px; height: 40px; flex: none; }
-.marca div { display: flex; flex-direction: column; line-height: 1; }
-.marca-nombre { font-family: var(--serif); font-size: 26px; font-weight: 700; color: var(--tinta); letter-spacing: .02em; }
-.marca-sub { font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: var(--oro); margin-top: 4px; }
-.marca-chica svg { width: 28px; height: 28px; }
-.marca-chica .marca-nombre { font-size: 20px; color: #fff; }
+.marca { display: flex; align-items: center; }
+.marca img { display: block; width: 260px; max-width: 100%; height: auto; border-radius: 12px; }
+.marca-chica img { width: auto; height: 40px; border-radius: 6px; }
 
 /* ---------- Botones ---------- */
 .btn {
@@ -131,7 +127,6 @@ legend { font-size: 14px; font-weight: 500; color: var(--tinta-suave); margin-bo
   padding: 0 16px; background: var(--negro); color: var(--beige);
   border-bottom: 1px solid rgb(214 176 106 / 30%);
 }
-.barra .marca { color: var(--dorado-claro); }
 .barra-derecha { margin-left: auto; display: flex; align-items: center; gap: 14px; }
 .chip-sucursal {
   background: none; color: var(--beige); border: 1px solid rgb(214 176 106 / 55%);
@@ -317,8 +312,6 @@ tr.cancelada td { color: var(--tinta-suave); text-decoration: line-through; }
   width: 100%; max-width: 380px; border-radius: 24px; padding: 26px 22px; display: flex; flex-direction: column; gap: 8px;
   background: var(--beige); color: var(--negro); box-shadow: 0 20px 50px rgb(0 0 0 / 50%);
 }
-.tarjeta-lealtad .marca { color: var(--oro); }
-.tarjeta-lealtad .marca-chica .marca-nombre { color: var(--negro); }
 .tarjeta-arriba { gap: 10px; display: flex; align-items: center; justify-content: space-between; }
 .tarjeta-nivel { font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #fff; background: var(--cafe-dorado); border-radius: 999px; padding: 5px 14px; }
 .tarjeta-hola { font-size: 18px; margin: 14px 0 0; }
@@ -366,5 +359,5 @@ tr.cancelada td { color: var(--tinta-suave); text-decoration: line-through; }
 
 @media (max-width: 420px) {
   .fila-2, .fila-4 { grid-template-columns: 1fr; }
-  .marca-chica .marca-nombre { font-size: 17px; }
+  .marca-chica img { height: 32px; }
 }

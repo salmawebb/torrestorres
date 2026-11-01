@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useSesion } from '../context/Sesion'
+import logo from '../assets/logo-torres-torres.jpg'
+import logoHorizontal from '../assets/logo-horizontal.jpg'
 
 const MENU = [
   { a: '/', texto: 'Inicio', icono: '⌂', fin: true },
@@ -12,17 +14,12 @@ const MENU = [
   { a: '/administracion', texto: 'Administración', icono: '⚙', admin: true },
 ]
 
+// Logo oficial de la joyería. En la barra y en la tarjeta va la versión
+// horizontal (torre · TORRES TORRES · torre) para que se lea en poco espacio.
 export function Marca({ chica }) {
   return (
     <div className={`marca ${chica ? 'marca-chica' : ''}`}>
-      <svg viewBox="0 0 32 32" aria-hidden="true">
-        <path d="M16 5l8 8-8 14-8-14z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-        <path d="M8 13h16M12.5 13L16 27l3.5-14M12 5.5L12.5 13M20 5.5l-.5 7.5" fill="none" stroke="currentColor" strokeWidth="1.2" />
-      </svg>
-      <div>
-        <span className="marca-nombre">Torres Torres</span>
-        {!chica && <span className="marca-sub">Joyería</span>}
-      </div>
+      <img src={chica ? logoHorizontal : logo} alt="Torres Torres · Joyería y Relojería" />
     </div>
   )
 }

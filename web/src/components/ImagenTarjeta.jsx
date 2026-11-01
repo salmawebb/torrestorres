@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { QRCodeCanvas } from 'qrcode.react'
+import logo from '../assets/logo-torres-torres.jpg'
 
 // Botón que arma la imagen de la tarjeta (negro, dorado y beige) con el nombre
 // de pila y el QR del cliente, para guardarla en el celular o mandarla por
@@ -48,7 +49,7 @@ async function dibujarTarjeta(nombre, qr) {
   const estilo = getComputedStyle(document.documentElement)
   const serif = estilo.getPropertyValue('--serif').trim() || 'Georgia, serif'
   const sans = estilo.getPropertyValue('--sans').trim() || 'system-ui, sans-serif'
-  await Promise.all([document.fonts.load(`700 96px ${serif}`), document.fonts.load(`400 40px ${sans}`)])
+  const [imagenLogo] = await Promise.all([cargarImagen(logo), document.fonts.load(`700 96px ${serif}`), document.fonts.load(`400 40px ${sans}`)])
 
   const lienzo = document.createElement('canvas')
   lienzo.width = ANCHO
@@ -61,11 +62,11 @@ async function dibujarTarjeta(nombre, qr) {
   c.lineWidth = 3
   c.strokeRect(48, 48, ANCHO - 96, ALTO - 96)
 
-  diamante(c, centro, 250, 150)
+  const anchoLogo = 800
+  const altoLogo = (anchoLogo * imagenLogo.height) / imagenLogo.width
+  c.drawImage(imagenLogo, centro - anchoLogo / 2, 90, anchoLogo, altoLogo)
 
   c.textAlign = 'center'
-  texto(c, 'Torres Torres', centro, 520, `700 104px ${serif}`, '#ffffff')
-  texto(c, 'J O Y E R Í A', centro, 600, `500 34px ${sans}`, DORADO)
   c.fillStyle = DORADO
   c.fillRect(centro - 80, 680, 160, 3)
   texto(c, `Hola, ${nombre}`, centro, 820, `700 88px ${serif}`, '#ffffff')
@@ -99,17 +100,11 @@ function redondeado(c, x, y, w, h, r) {
   c.fill()
 }
 
-// El mismo diamante de la marca, escalado desde su caja de 32 × 32.
-function diamante(c, cx, cy, tam) {
-  const e = tam / 32
-  c.save()
-  c.translate(cx - 16 * e, cy - 16 * e)
-  c.scale(e, e)
-  c.strokeStyle = DORADO
-  c.lineJoin = 'round'
-  c.lineWidth = 1.6
-  c.stroke(new Path2D('M16 5l8 8-8 14-8-14z'))
-  c.lineWidth = 1.1
-  c.stroke(new Path2D('M8 13h16M12.5 13L16 27l3.5-14M12 5.5L12.5 13M20 5.5l-.5 7.5'))
-  c.restore()
+function cargarImagen(src) {
+  return new Promise((listo, fallo) => {
+    const img = new Image()
+    img.onload = () => listo(img)
+    img.onerror = fallo
+    img.src = src
+  })
 }
