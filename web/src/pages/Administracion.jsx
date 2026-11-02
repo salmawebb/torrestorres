@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Aviso, BotonExportar, Modal, Tarjeta, useAviso } from '../components/Comunes'
 import { useDatos } from '../context/Datos'
-import { fecha, pesos } from '../lib/formato'
+import { pesos } from '../lib/formato'
 
 const PESTANAS = [
   { id: 'usuarios', texto: 'Usuarios' },
@@ -171,15 +171,15 @@ function Respaldo() {
       <div className="accesos">
         <BotonExportar nombre="respaldo-clientes" filas={clientes} columnas={[
           { titulo: 'Número', valor: (c) => c.id }, { titulo: 'Nombre', valor: (c) => c.nombre }, { titulo: 'Apellidos', valor: (c) => c.apellidos },
-          { titulo: 'Teléfono', valor: (c) => c.telefono }, { titulo: 'Cumpleaños', valor: (c) => c.cumpleanos }, { titulo: 'Registro', valor: (c) => fecha(c.registro) }, { titulo: 'Notas', valor: (c) => c.notas },
+          { titulo: 'Teléfono', valor: (c) => c.telefono }, { titulo: 'Cumpleaños', valor: (c) => c.cumpleanos }, { titulo: 'Registro', valor: (c) => c.registro }, { titulo: 'Notas', valor: (c) => c.notas },
         ]} />
         <BotonExportar nombre="respaldo-compras" filas={compras} columnas={[
-          { titulo: 'Fecha', valor: (v) => v.fecha.toISOString() }, { titulo: 'Cliente', valor: (v) => v.clienteId }, { titulo: 'Nombre', valor: (v) => cli(v.clienteId).nombre },
+          { titulo: 'Fecha', valor: (v) => v.fecha }, { titulo: 'Cliente', valor: (v) => v.clienteId }, { titulo: 'Nombre', valor: (v) => cli(v.clienteId).nombre },
           { titulo: 'Sucursal', valor: (v) => v.sucursal }, { titulo: 'Ticket', valor: (v) => v.ticket }, { titulo: 'Total', valor: (v) => v.total },
           { titulo: 'Registró', valor: (v) => v.empleadaId }, { titulo: 'Cancelada', valor: (v) => (v.cancelada ? 'Sí' : 'No') },
         ]} />
         <BotonExportar nombre="respaldo-canjes" filas={canjes} columnas={[
-          { titulo: 'Fecha', valor: (v) => v.fecha.toISOString() }, { titulo: 'Cliente', valor: (v) => v.clienteId }, { titulo: 'Sucursal', valor: (v) => v.sucursal },
+          { titulo: 'Fecha', valor: (v) => v.fecha }, { titulo: 'Cliente', valor: (v) => v.clienteId }, { titulo: 'Sucursal', valor: (v) => v.sucursal },
           { titulo: 'Puntos', valor: (v) => v.puntos }, { titulo: 'Descuento', valor: (v) => v.pesos },
         ]} />
       </div>

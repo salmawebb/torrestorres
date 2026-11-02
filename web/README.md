@@ -47,7 +47,9 @@ GitHub los secretos `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`
 | `/tarjeta/:token` | Público | Tarjeta del cliente: nombre de pila, nivel, puntos, vigencia y QR |
 | `/contrasena` | Público | Crear contraseña desde la invitación o el enlace de recuperación |
 
-"Exportar a Excel" (solo administrador) descarga por ahora un CSV con los filtros aplicados.
+"Exportar a Excel" (solo administrador) descarga un archivo `.xlsx` con los filtros aplicados; las fechas y los montos quedan como fechas y números de Excel.
+
+"Escanear QR" lee la tarjeta del cliente con la cámara (BarcodeDetector en Chrome de Android, jsQR en Safari y computadoras) y abre su ficha. La cámara necesita HTTPS, que GitHub Pages ya da. El botón "Simular lectura" solo aparece en modo demo.
 
 ## Estructura
 
@@ -59,5 +61,5 @@ GitHub los secretos `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`
 
 ## Pendiente
 
-- Leer el QR con la cámara (hoy la vista de cámara está lista y la lectura se simula).
-- Exportar en `.xlsx` e importar el Excel actual.
+- Importar el Excel actual.
+- Probar el escaneo en los celulares y tabletas de cada sucursal.

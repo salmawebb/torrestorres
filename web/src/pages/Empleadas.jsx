@@ -43,7 +43,7 @@ export default function Empleadas() {
       <Tarjeta titulo={u.nombre} accion={
         <BotonExportar
           nombre={`empleada-${u.nombre.split(' ')[0].toLowerCase()}`}
-          columnas={[{ titulo: 'Semana desde', valor: (s) => fecha(s.desde) }, { titulo: 'Total', valor: (s) => s.total }, { titulo: 'Ventas', valor: (s) => s.ventas }]}
+          columnas={[{ titulo: 'Semana desde', valor: (s) => s.desde }, { titulo: 'Total', valor: (s) => s.total }, { titulo: 'Ventas', valor: (s) => s.ventas }]}
           filas={semanas}
         />
       }>

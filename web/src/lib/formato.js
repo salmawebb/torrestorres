@@ -47,3 +47,11 @@ export const cumpleEnSemana = (ddmm, hoy = new Date()) => {
 
 // Dirección completa de una ruta de la página, contando la carpeta donde está publicada.
 export const urlPagina = (ruta) => `${window.location.origin}${import.meta.env.BASE_URL}${ruta}`
+
+// Saca el código de la tarjeta del texto del QR. El QR lleva el enlace
+// https://.../tarjeta/<código>, pero también se acepta el código solo.
+export function tokenDeQR(texto) {
+  const t = String(texto ?? '').trim()
+  const enlace = t.match(/\/tarjeta\/([^/?#\s]+)/)
+  return decodeURIComponent(enlace ? enlace[1] : t)
+}

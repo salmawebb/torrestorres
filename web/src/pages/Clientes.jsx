@@ -42,7 +42,7 @@ export default function Clientes() {
     { titulo: 'Nivel', valor: (c) => resumenes[c.id].nivel },
     { titulo: 'Puntos', valor: (c) => resumenes[c.id].puntos },
     { titulo: 'Compra acumulada', valor: (c) => resumenes[c.id].acumulado },
-    { titulo: 'Última compra', valor: (c) => fecha(resumenes[c.id].ultimaCompra) },
+    { titulo: 'Última compra', valor: (c) => resumenes[c.id].ultimaCompra },
   ]
 
   return (
