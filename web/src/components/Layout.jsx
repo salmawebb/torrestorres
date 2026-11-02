@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useSesion } from '../context/Sesion'
-import logo from '../assets/logo-torres-torres.jpg'
-import logoHorizontal from '../assets/logo-horizontal.jpg'
+import logoNegro from '../assets/logo-torres-torres.jpg'
+import logoHorizontalNegro from '../assets/logo-horizontal.jpg'
+import logoClaro from '../assets/logo-torres-torres-claro.png'
+import logoHorizontalClaro from '../assets/logo-horizontal-claro.png'
 
 const MENU = [
   { a: '/', texto: 'Inicio', icono: '⌂', fin: true },
@@ -16,10 +18,14 @@ const MENU = [
 
 // Logo oficial de la joyería. En la barra y en la tarjeta va la versión
 // horizontal (torre · TORRES TORRES · torre) para que se lea en poco espacio.
-export function Marca({ chica }) {
+// Sobre fondo claro va sin fondo y con letras oscuras; en la barra negra, el original.
+export function Marca({ chica, sobreNegro }) {
+  const src = sobreNegro
+    ? (chica ? logoHorizontalNegro : logoNegro)
+    : (chica ? logoHorizontalClaro : logoClaro)
   return (
     <div className={`marca ${chica ? 'marca-chica' : ''}`}>
-      <img src={chica ? logoHorizontal : logo} alt="Torres Torres · Joyería y Relojería" />
+      <img src={src} alt="Torres Torres · Joyería y Relojería" />
     </div>
   )
 }
@@ -34,7 +40,7 @@ export default function Layout() {
     <div className="app">
       <header className="barra">
         <button className="btn-icono solo-movil" onClick={() => setMenuAbierto(true)} aria-label="Abrir menú">☰</button>
-        <Marca chica />
+        <Marca chica sobreNegro />
         <div className="barra-derecha">
           <button className="chip-sucursal" onClick={() => navigate('/sucursal')} title="Cambiar sucursal">
             📍 {sucursal}
