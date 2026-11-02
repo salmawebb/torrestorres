@@ -20,7 +20,7 @@ export default function TarjetaCliente() {
     return (
       <div className="pantalla-tarjeta">
         <div className="tarjeta-lealtad">
-          <Marca />
+          <Marca original />
           <p>Esta tarjeta ya no es válida. Pide la nueva en tu sucursal.</p>
         </div>
       </div>
@@ -32,7 +32,7 @@ export default function TarjetaCliente() {
     <div className="pantalla-tarjeta">
       <div className="tarjeta-lealtad">
         <div className="tarjeta-arriba">
-          <Marca chica />
+          <Marca original />
           <span className="tarjeta-nivel">{r.nivel}</span>
         </div>
         <p className="tarjeta-hola">Hola, {t.nombre}</p>

@@ -1,10 +1,9 @@
 import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useSesion } from '../context/Sesion'
-import logoNegro from '../assets/logo-torres-torres.jpg'
-import logoHorizontalNegro from '../assets/logo-horizontal.jpg'
+import logo from '../assets/logo-torres-torres.jpg'
+import logoHorizontal from '../assets/logo-horizontal.jpg'
 import logoClaro from '../assets/logo-torres-torres-claro.png'
-import logoHorizontalClaro from '../assets/logo-horizontal-claro.png'
 
 const MENU = [
   { a: '/', texto: 'Inicio', icono: '⌂', fin: true },
@@ -16,15 +15,14 @@ const MENU = [
   { a: '/administracion', texto: 'Administración', icono: '⚙', admin: true },
 ]
 
-// Logo oficial de la joyería. En la barra y en la tarjeta va la versión
-// horizontal (torre · TORRES TORRES · torre) para que se lea en poco espacio.
-// Sobre fondo claro va sin fondo y con letras oscuras; en la barra negra, el original.
-export function Marca({ chica, sobreNegro }) {
-  const src = sobreNegro
-    ? (chica ? logoHorizontalNegro : logoNegro)
-    : (chica ? logoHorizontalClaro : logoClaro)
+// Logo oficial de la joyería. En la barra negra va la versión horizontal
+// (torre · TORRES TORRES · torre) para que se lea en poco espacio; en la tarjeta
+// del cliente, el original chico; en las pantallas de acceso, sin fondo.
+export function Marca({ chica, original }) {
+  const src = chica ? logoHorizontal : original ? logo : logoClaro
+  const clase = chica ? 'marca-chica' : original ? 'marca-original' : ''
   return (
-    <div className={`marca ${chica ? 'marca-chica' : ''}`}>
+    <div className={`marca ${clase}`}>
       <img src={src} alt="Torres Torres · Joyería y Relojería" />
     </div>
   )
@@ -40,7 +38,7 @@ export default function Layout() {
     <div className="app">
       <header className="barra">
         <button className="btn-icono solo-movil" onClick={() => setMenuAbierto(true)} aria-label="Abrir menú">☰</button>
-        <Marca chica sobreNegro />
+        <Marca chica />
         <div className="barra-derecha">
           <button className="chip-sucursal" onClick={() => navigate('/sucursal')} title="Cambiar sucursal">
             📍 {sucursal}

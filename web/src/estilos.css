@@ -50,6 +50,7 @@ small { color: var(--tinta-suave); }
 .marca { display: flex; align-items: center; }
 .marca img { display: block; width: 260px; max-width: 100%; height: auto; }
 .marca-chica img { width: auto; height: 40px; }
+.marca-original img { width: 120px; border-radius: 10px; }
 
 /* ---------- Botones ---------- */
 .btn {
