@@ -48,9 +48,9 @@ small { color: var(--tinta-suave); }
 
 /* ---------- Marca ---------- */
 .marca { display: flex; align-items: center; }
-.marca img { display: block; width: 260px; max-width: 100%; height: auto; }
-.marca-chica img { width: auto; height: 40px; }
-.marca-original img { width: 120px; border-radius: 10px; }
+.marca img { display: block; width: 260px; max-width: 100%; height: auto; border-radius: 12px; }
+.marca-chica img { width: auto; height: 40px; border-radius: 0; }
+.marca-mini img { width: 120px; border-radius: 10px; }
 
 /* ---------- Botones ---------- */
 .btn {
