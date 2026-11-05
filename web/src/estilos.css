@@ -26,8 +26,8 @@
   --radio: 14px;
   --sombra: 0 10px 30px rgb(0 0 0 / 35%);
   --radio-tarjeta: 18px;
-  --serif: 'Cormorant Garamond', Georgia, serif;
-  --sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --serif: 'DM Serif Display', Georgia, serif;
+  --sans: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   color-scheme: light;
 }
 
