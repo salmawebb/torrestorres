@@ -49,7 +49,7 @@ small { color: var(--tinta-suave); }
 /* ---------- Marca ---------- */
 .marca { display: flex; align-items: center; }
 .marca img { display: block; width: 260px; max-width: 100%; height: auto; border-radius: 12px; }
-.marca-chica img { width: auto; height: 40px; border-radius: 0; }
+.marca-chica img { width: auto; height: 64px; border-radius: 6px; }
 .marca-mini img { width: 120px; border-radius: 10px; }
 
 /* ---------- Botones ---------- */
@@ -125,7 +125,7 @@ legend { font-size: 14px; font-weight: 500; color: var(--tinta-suave); margin-bo
 /* ---------- Estructura ---------- */
 .app { min-height: 100vh; display: flex; flex-direction: column; }
 .barra {
-  position: sticky; top: 0; z-index: 20; height: 60px; display: flex; align-items: center; gap: 12px;
+  position: sticky; top: 0; z-index: 20; height: 72px; display: flex; align-items: center; gap: 12px;
   padding: 0 16px; background: var(--negro); color: var(--beige);
   border-bottom: 1px solid rgb(214 176 106 / 30%);
 }
@@ -137,7 +137,7 @@ legend { font-size: 14px; font-weight: 500; color: var(--tinta-suave); margin-bo
 .barra-usuario { font-size: 14px; opacity: .85; }
 .cuerpo { flex: 1; display: flex; }
 .menu { width: 230px; flex: none; border-right: 1px solid rgb(214 176 106 / 18%); background: var(--negro); }
-.menu-panel { position: sticky; top: 60px; display: flex; flex-direction: column; padding: 16px 10px; gap: 2px; }
+.menu-panel { position: sticky; top: 72px; display: flex; flex-direction: column; padding: 16px 10px; gap: 2px; }
 .menu-usuario { display: none; }
 .menu a {
   display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 12px; border-radius: 10px;
@@ -361,5 +361,5 @@ tr.cancelada td { color: var(--tinta-suave); text-decoration: line-through; }
 
 @media (max-width: 420px) {
   .fila-2, .fila-4 { grid-template-columns: 1fr; }
-  .marca-chica img { height: 32px; }
+  .marca-chica img { height: 56px; }
 }
