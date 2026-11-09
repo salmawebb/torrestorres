@@ -55,28 +55,32 @@ export default function Empleadas() {
 
       <div className="rejilla-2">
         <Tarjeta titulo="Por semana">
-          <table className="tabla">
-            <thead><tr><th>Semana</th><th className="num">Total</th><th className="num">Ventas</th></tr></thead>
-            <tbody>
-              {semanas.map((s) => (
-                <tr key={s.desde.getTime()}><td>{fecha(s.desde)}</td><td className="num">{pesos(s.total)}</td><td className="num">{s.ventas}</td></tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="tabla-envoltura">
+            <table className="tabla">
+              <thead><tr><th>Semana</th><th className="num">Total</th><th className="num">Ventas</th></tr></thead>
+              <tbody>
+                {semanas.map((s) => (
+                  <tr key={s.desde.getTime()}><td>{fecha(s.desde)}</td><td className="num">{pesos(s.total)}</td><td className="num">{s.ventas}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </Tarjeta>
         <Tarjeta titulo="Por mes">
-          <table className="tabla">
-            <thead><tr><th>Mes</th><th className="num">Total</th><th className="num">Ventas</th></tr></thead>
-            <tbody>
-              {meses.map((s) => (
-                <tr key={s.desde.getTime()}>
-                  <td>{s.desde.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })}</td>
-                  <td className="num">{pesos(s.total)}</td>
-                  <td className="num">{s.ventas}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="tabla-envoltura">
+            <table className="tabla">
+              <thead><tr><th>Mes</th><th className="num">Total</th><th className="num">Ventas</th></tr></thead>
+              <tbody>
+                {meses.map((s) => (
+                  <tr key={s.desde.getTime()}>
+                    <td className="ajustar">{s.desde.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })}</td>
+                    <td className="num">{pesos(s.total)}</td>
+                    <td className="num">{s.ventas}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </Tarjeta>
       </div>
     </div>

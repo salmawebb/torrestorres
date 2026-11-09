@@ -36,18 +36,20 @@ export default function InicioAdmin() {
 
       <div className="rejilla-2">
         <Tarjeta titulo="Por sucursal">
-          <table className="tabla">
-            <thead><tr><th>Sucursal</th><th className="num">Hoy</th><th className="num">Semana</th></tr></thead>
-            <tbody>
-              {porSucursal.map((x) => (
-                <tr key={x.s}>
-                  <td>{x.s}</td>
-                  <td className="num">{pesos(x.hoy.total)} <small>({x.hoy.n})</small></td>
-                  <td className="num">{pesos(x.semana.total)} <small>({x.semana.n})</small></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="tabla-envoltura">
+            <table className="tabla">
+              <thead><tr><th>Sucursal</th><th className="num">Hoy</th><th className="num">Semana</th></tr></thead>
+              <tbody>
+                {porSucursal.map((x) => (
+                  <tr key={x.s}>
+                    <td>{x.s}</td>
+                    <td className="num">{pesos(x.hoy.total)} <small>({x.hoy.n})</small></td>
+                    <td className="num">{pesos(x.semana.total)} <small>({x.semana.n})</small></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </Tarjeta>
         <Tarjeta titulo="Ranking de la semana" accion={<Link to="/reportes" className="enlace">Ver reporte</Link>}>
           <Ranking filas={ranking(compras, usuarios, semana, sumarDias(semana, 7))} />
