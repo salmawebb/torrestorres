@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Marca } from '../components/Layout'
 import { useDatos } from '../context/Datos'
 import { useSesion } from '../context/Sesion'
-import { modoDemo } from '../lib/supabase'
+import { cambiarDemo, hayBaseReal, modoDemo } from '../lib/supabase'
 
 export default function Login() {
   const { usuarios, enviarRecuperacion } = useDatos()
@@ -87,6 +87,14 @@ export default function Login() {
             <span>Demo sin datos reales:</span>
             <button className="btn btn-secundario btn-chico" onClick={() => entrar(usuarios[1])}>Entrar como empleada</button>
             <button className="btn btn-secundario btn-chico" onClick={() => entrar(usuarios[0])}>Entrar como administrador</button>
+            {hayBaseReal && <button type="button" className="enlace" onClick={() => cambiarDemo(false)}>Salir de la demostración</button>}
+          </div>
+        )}
+
+        {!modoDemo && (
+          <div className="demo">
+            <span>¿Quieres conocer el sistema sin una cuenta?</span>
+            <button type="button" className="btn btn-secundario btn-chico" onClick={() => cambiarDemo(true)}>Ver demostración</button>
           </div>
         )}
       </div>
