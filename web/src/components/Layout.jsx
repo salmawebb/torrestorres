@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useSesion } from '../context/Sesion'
-import { cambiarDemo, hayBaseReal, modoDemo } from '../lib/supabase'
 import logo from '../assets/logo-torres-torres.jpg'
 import logoHorizontal from '../assets/logo-horizontal.jpg'
 
@@ -64,12 +63,6 @@ export default function Layout() {
         </nav>
 
         <main className="contenido">
-          {modoDemo && hayBaseReal && (
-            <p className="aviso-demo">
-              Estás en la demostración: los datos son de ejemplo y nada se guarda en la base real.{' '}
-              <button type="button" className="enlace" onClick={() => cambiarDemo(false)}>Salir</button>
-            </p>
-          )}
           <Outlet />
         </main>
       </div>
