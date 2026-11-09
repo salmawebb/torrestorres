@@ -229,6 +229,7 @@ legend { font-size: 14px; font-weight: 500; color: var(--tinta-suave); margin-bo
 .tabla th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--tinta-suave); font-weight: 600; padding: 8px; border-bottom: 1px solid var(--linea); white-space: nowrap; }
 .tabla td { padding: 10px 8px; border-bottom: 1px solid var(--linea); white-space: nowrap; }
 .tabla tr:last-child td { border-bottom: 0; }
+.tabla .ajustar { white-space: normal; }
 .tabla .num { text-align: right; font-variant-numeric: tabular-nums; }
 .tabla td input { min-height: 38px; max-width: 140px; }
 .tabla .beneficio { white-space: normal; color: var(--tinta-suave); min-width: 220px; }
@@ -357,6 +358,7 @@ tr.cancelada td { color: var(--tinta-suave); text-decoration: line-through; }
   .ficha h1 { font-size: 27px; }
   .filtros label { max-width: none; }
   .card { padding: 16px; }
+  .tabla th, .tabla td { padding-left: 6px; padding-right: 6px; }
 }
 
 @media (max-width: 420px) {
