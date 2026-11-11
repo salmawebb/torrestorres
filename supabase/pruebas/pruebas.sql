@@ -194,4 +194,17 @@ select pruebas.verifica((select siguiente_nivel = 'Diamante' and falta_para_sigu
 select pruebas.verifica((select count(*) from tarjeta_publica(gen_random_uuid())) = 0, 'un código inventado no muestra nada');
 reset role;
 
+-- Importación del Excel: el admin conserva ID, fecha y quién registró ----
+
+set role authenticated;
+select pruebas.como('admin@torrestorres.mx');
+insert into clientes (id, nombre, telefono, registro, registrado_por) values
+  (5000, 'Importada', '8110000001', '2026-10-02 12:00-06', (select id from perfiles where correo = 'lupita@torrestorres.mx'));
+select pruebas.verifica((select registro = '2026-10-02 12:00-06' and registrado_por = (select id from perfiles where correo = 'lupita@torrestorres.mx')
+  from clientes where id = 5000), 'al importar, el admin conserva la fecha de registro y quién la registró');
+insert into clientes (nombre, telefono) values ('Nueva después', '8110000002');
+select pruebas.verifica((select id from clientes where nombre = 'Nueva después') = 5001,
+  'después de importar un ID, el siguiente cliente nuevo no choca con él');
+reset role;
+
 \echo 'Todas las pruebas pasaron.'
