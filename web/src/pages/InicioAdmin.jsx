@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import BuscarCliente from '../components/BuscarCliente'
+import CumpleanosSemana from '../components/CumpleanosSemana'
 import { Dato, NivelBadge, Tarjeta, Vacio } from '../components/Comunes'
 import Ranking from '../components/Ranking'
 import { useDatos } from '../context/Datos'
@@ -56,9 +57,12 @@ export default function InicioAdmin() {
         </Tarjeta>
       </div>
 
-      <Tarjeta titulo="Registrar una venta">
-        <BuscarCliente />
-      </Tarjeta>
+      <div className="rejilla-2">
+        <Tarjeta titulo="Registrar una venta">
+          <BuscarCliente />
+        </Tarjeta>
+        <CumpleanosSemana />
+      </div>
 
       <div className="rejilla-3">
         <Tarjeta titulo="Puntos por vencer">
