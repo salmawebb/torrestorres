@@ -66,7 +66,7 @@ export default function ClienteFicha() {
         {r.puedeCanjear ? (
           <p className="estado-ok">✓ Ya puede canjear sus puntos.</p>
         ) : (
-          <p className="estado-pendiente">Le faltan {reglas.minimoCanje - r.puntos} puntos para poder canjear.</p>
+          <p className="estado-pendiente">{reglas.minimoCanje <= 1 ? 'Todavía no tiene puntos para canjear.' : `Le faltan ${reglas.minimoCanje - r.puntos} puntos para poder canjear.`}</p>
         )}
 
         <div className="ficha-acciones">

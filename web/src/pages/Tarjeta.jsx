@@ -43,7 +43,9 @@ export default function TarjetaCliente() {
         <p className="tarjeta-detalle tarjeta-canje">
           {r.puedeCanjear
             ? `Puedes canjearlos por ${pesos(r.pesosCanje)} en tu próxima compra.`
-            : `Te faltan ${r.minimoCanje - r.puntos} puntos para tu primer canje.`}
+            : r.minimoCanje <= 1
+              ? 'Acumula puntos con tus compras para canjearlos.'
+              : `Te faltan ${r.minimoCanje - r.puntos} puntos para tu primer canje.`}
         </p>
         <p className="tarjeta-detalle">{r.vigencia ? `Vigentes hasta el ${fecha(r.vigencia)}` : 'Sin puntos vigentes'}</p>
         {r.siguienteNivel && (

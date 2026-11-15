@@ -7,7 +7,7 @@ import { urlPagina } from './formato'
 export const REGLAS_INICIALES = {
   bloquePesos: 10, // puntos por cada $10
   valorPunto: 0.25, // $ por punto al canjear
-  minimoCanje: 200, // puntos mínimos para canjear
+  minimoCanje: 1, // puntos mínimos para canjear (1 = canje abierto)
   vigenciaMeses: 6,
   niveles: [
     { nombre: 'Plata', desde: 0, puntosPorBloque: 1, beneficio: 'Acceso al programa y acumulación de puntos' },
