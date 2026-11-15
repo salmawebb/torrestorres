@@ -3,7 +3,7 @@ import BuscarCliente from '../components/BuscarCliente'
 import { Dato, NivelBadge, Tarjeta, Vacio } from '../components/Comunes'
 import { useDatos } from '../context/Datos'
 import { useSesion } from '../context/Sesion'
-import { cumpleEnSemana, hora, inicioDeSemana, inicioDelDia, pesos } from '../lib/formato'
+import { cumpleEnSemana, hora, inicioDeSemana, inicioDelDia } from '../lib/formato'
 
 export default function InicioEmpleada() {
   const { usuario } = useSesion()
@@ -27,27 +27,25 @@ export default function InicioEmpleada() {
       </Tarjeta>
 
       <div className="rejilla-2">
-        <Tarjeta titulo="Mis ventas de hoy">
+        <Tarjeta titulo={`Mis registros de hoy (${hoy.length})`}>
           {hoy.length ? (
             <ul className="lista-simple">
               {hoy.map((v) => (
                 <li key={v.id}>
                   <span className="lista-hora">{hora(v.fecha)}</span>
                   <Link to={`/clientes/${v.clienteId}`}>{cliente(v.clienteId).nombre} {cliente(v.clienteId).apellidos.split(' ')[0]}</Link>
-                  <span className="lista-monto">{pesos(v.total)}</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <Vacio>Todavía no registras ventas hoy.</Vacio>
+            <Vacio>Todavía no tienes registros hoy.</Vacio>
           )}
         </Tarjeta>
 
         <div className="columna">
           <Tarjeta titulo="Mi total de la semana">
             <div className="datos-fila">
-              <Dato etiqueta="Vendido" valor={pesos(semana.reduce((s, v) => s + v.total, 0))} />
-              <Dato etiqueta="Ventas" valor={semana.length} />
+              <Dato etiqueta="Registros" valor={semana.length} />
             </div>
           </Tarjeta>
 
