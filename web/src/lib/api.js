@@ -47,7 +47,10 @@ const aCompra = (f, sucursales, niveles) => ({
   sucursal: sucursales[f.sucursal_id],
   total: Number(f.total),
   ticket: f.ticket,
-  empleadaId: f.registrada_por,
+  // Quien atendió la venta (cuenta para sus registros y reportes) y la cuenta
+  // con la que se registró (pueden ser distintas en un celular compartido).
+  empleadaId: f.atendida_por ?? f.registrada_por,
+  registroId: f.registrada_por,
   cancelada: f.cancelada,
   foto: f.foto_ticket,
   puntos: f.puntos,
@@ -138,6 +141,7 @@ export async function insertarCompra(cat, compra) {
         total: compra.total,
         ticket: compra.ticket,
         foto_ticket: foto,
+        atendida_por: compra.empleadaId,
       })
       .select('id')
       .single(),

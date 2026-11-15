@@ -39,7 +39,8 @@ export default function Ventas() {
     { titulo: 'Total', valor: (v) => v.total },
     { titulo: 'Puntos', valor: (v) => resumenes[v.clienteId].puntosPorCompraId[v.id]?.puntos ?? 0 },
     { titulo: 'Nivel usado', valor: nivelUsado },
-    { titulo: 'Registró', valor: (v) => nombreEmpleada(v.empleadaId) },
+    { titulo: 'Atendió', valor: (v) => nombreEmpleada(v.empleadaId) },
+    { titulo: 'Cuenta que registró', valor: (v) => nombreEmpleada(v.registroId ?? v.empleadaId) },
     { titulo: 'Estado', valor: (v) => (v.cancelada ? 'Cancelada' : 'Activa') },
   ]
 
@@ -72,7 +73,7 @@ export default function Ventas() {
           <div className="tabla-envoltura">
             <table className="tabla">
               <thead>
-                <tr><th>Fecha</th><th>Sucursal</th><th>Ticket</th><th>Cliente</th><th className="num">Total</th><th className="num">Puntos</th><th>Nivel</th>{esAdmin && <th>Registró</th>}</tr>
+                <tr><th>Fecha</th><th>Sucursal</th><th>Ticket</th><th>Cliente</th><th className="num">Total</th><th className="num">Puntos</th><th>Nivel</th>{esAdmin && <th>Atendió</th>}</tr>
               </thead>
               <tbody>
                 {lista.map((v) => (

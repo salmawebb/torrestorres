@@ -94,7 +94,7 @@ export default function ClienteFicha() {
             <div className="tabla-envoltura">
               <table className="tabla">
                 <thead>
-                  <tr><th>Fecha</th><th>Sucursal</th><th>Ticket</th><th className="num">Total</th><th className="num">Puntos</th><th>Registró</th>{esAdmin && <th />}</tr>
+                  <tr><th>Fecha</th><th>Sucursal</th><th>Ticket</th><th className="num">Total</th><th className="num">Puntos</th><th>Atendió</th>{esAdmin && <th />}</tr>
                 </thead>
                 <tbody>
                   {susCompras.map((v) => (

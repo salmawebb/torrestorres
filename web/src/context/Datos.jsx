@@ -45,8 +45,8 @@ function DatosDemo({ children }) {
         setDatos((d) => ({ ...d, clientes: [...d.clientes, nuevo] }))
         return nuevo
       },
-      agregarCompra(compra) {
-        const nueva = { ...compra, id: `v${Date.now()}`, cancelada: false }
+      agregarCompra(compra, registroId) {
+        const nueva = { ...compra, registroId, id: `v${Date.now()}`, cancelada: false }
         delete nueva.archivo
         setDatos((d) => ({ ...d, compras: [...d.compras, nueva] }))
         return nueva

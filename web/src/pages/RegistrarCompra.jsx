@@ -10,9 +10,13 @@ const paraInput = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).t
 
 export default function RegistrarCompra() {
   const { id } = useParams()
-  const { clientes, compras, canjes, resumenes, reglas, agregarCompra } = useDatos()
+  const { clientes, compras, canjes, usuarios, resumenes, reglas, agregarCompra } = useDatos()
   const { usuario, sucursal } = useSesion()
   const navigate = useNavigate()
+  // Con un solo celular por sucursal, la venta va a nombre de quien atiende,
+  // no de la cuenta abierta. Si la empleada usa su propia cuenta, ya sale ella.
+  const personal = usuarios.filter((u) => u.activa && (u.rol === 'empleada' || u.id === usuario.id))
+  const [atiende, setAtiende] = useState(usuario.rol === 'empleada' ? usuario.id : '')
   const [total, setTotal] = useState('')
   const [ticket, setTicket] = useState('')
   const [cambiarFecha, setCambiarFecha] = useState(false)
@@ -32,7 +36,7 @@ export default function RegistrarCompra() {
 
   const guardar = async (e) => {
     e.preventDefault()
-    if (monto <= 0 || !ticket.trim() || duplicado || ocupado) return
+    if (monto <= 0 || !ticket.trim() || !atiende || duplicado || ocupado) return
     setOcupado(true)
     setError('')
     let nueva
@@ -43,9 +47,9 @@ export default function RegistrarCompra() {
         sucursal,
         total: monto,
         ticket: ticket.trim(),
-        empleadaId: usuario.id,
+        empleadaId: atiende,
         archivo: foto,
-      })
+      }, usuario.id)
     } catch (err) {
       setOcupado(false)
       return setError(`No se pudo guardar la venta: ${err.message}`)
@@ -104,6 +108,15 @@ export default function RegistrarCompra() {
       <Tarjeta>
         <form className="formulario" onSubmit={guardar}>
           <label>
+            ¿Quién atiende?
+            <select required value={atiende} onChange={(e) => setAtiende(e.target.value)}>
+              <option value="" disabled>Elige a la empleada</option>
+              {personal.map((u) => (
+                <option key={u.id} value={u.id}>{u.nombre}</option>
+              ))}
+            </select>
+          </label>
+          <label>
             Total del ticket (ya con descuento)
             <div className="input-pesos">
               <span>$</span>
@@ -135,11 +148,11 @@ export default function RegistrarCompra() {
           <div className="previo">
             <span>Ganará</span>
             <strong>{ganara} puntos</strong>
-            <small>Sucursal {sucursal} · registra {usuario.nombre.split(' ')[0]}</small>
+            <small>Sucursal {sucursal}{atiende && ` · atiende ${personal.find((u) => u.id === atiende)?.nombre.split(' ')[0] ?? ''}`}</small>
             {sube && <small className="estado-ok">Con esta compra sube a {r.siguienteNivel}.</small>}
           </div>
 
-          <button className="btn btn-primario btn-bloque btn-grande" disabled={monto <= 0 || !ticket.trim() || duplicado || ocupado}>{ocupado ? 'Guardando…' : 'Guardar venta'}</button>
+          <button className="btn btn-primario btn-bloque btn-grande" disabled={monto <= 0 || !ticket.trim() || !atiende || duplicado || ocupado}>{ocupado ? 'Guardando…' : 'Guardar venta'}</button>
         </form>
       </Tarjeta>
     </div>
