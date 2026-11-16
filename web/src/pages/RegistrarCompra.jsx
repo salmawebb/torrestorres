@@ -14,9 +14,10 @@ export default function RegistrarCompra() {
   const { usuario, sucursal } = useSesion()
   const navigate = useNavigate()
   // Con un solo celular por sucursal, la venta va a nombre de quien atiende,
-  // no de la cuenta abierta. Empieza vacío para que siempre elijan.
+  // no de la cuenta abierta. Sale quien inició sesión; si atiende otra, lo cambia.
+  // Se muestran todas porque una empleada puede cubrir en otra sucursal.
   const personal = usuarios.filter((u) => u.activa && (u.rol === 'empleada' || u.id === usuario.id))
-  const [atiende, setAtiende] = useState('')
+  const [atiende, setAtiende] = useState(usuario.id)
   const [total, setTotal] = useState('')
   const [ticket, setTicket] = useState('')
   const [cambiarFecha, setCambiarFecha] = useState(false)
