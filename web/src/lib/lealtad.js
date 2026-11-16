@@ -100,6 +100,17 @@ export function mensajeWhatsApp({ nombre, ganados, puntos, nivel, vigencia, enla
   return partes.join(' ')
 }
 
+// Mensaje desde la ficha de la cliente: no hubo compra, solo comparte el estado de su tarjeta.
+export function mensajeEstadoTarjeta({ nombre, puntos, nivel, vigencia, enlace }) {
+  const partes = [
+    `Hola ${nombre}, te compartimos el estado de tu tarjeta de lealtad de Joyería Torres Torres.`,
+    `Tienes ${puntos} puntos disponibles (nivel ${nivel}).`,
+  ]
+  if (vigencia) partes.push(`Tus puntos vencen el ${vigencia.toLocaleDateString('es-MX')}.`)
+  partes.push(`Consulta tu tarjeta aquí: ${enlace}`)
+  return partes.join(' ')
+}
+
 export function enlaceWhatsApp(telefono, texto) {
   return `https://wa.me/${telefono}?text=${encodeURIComponent(texto)}`
 }
