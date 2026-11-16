@@ -63,7 +63,7 @@ export default function App() {
         <Route path="clientes/nuevo" element={<ClienteNuevo />} />
         <Route path="clientes/:id" element={<ClienteFicha />} />
         <Route path="clientes/:id/compra" element={<RegistrarCompra />} />
-        <Route path="ventas" element={<Ventas />} />
+        <Route path="ventas" element={<Protegida admin><Ventas /></Protegida>} />
         <Route path="canjes" element={<Canjes />} />
         <Route path="empleadas" element={<Protegida admin><Empleadas /></Protegida>} />
         <Route path="reportes" element={<Protegida admin><Reportes /></Protegida>} />

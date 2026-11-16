@@ -106,9 +106,9 @@ select pruebas.verifica((select token_tarjeta from clientes where id = 1001) <> 
   and (select token_tarjeta from clientes where id = 1001) is not null, 'regenerar el QR cambia el código');
 
 -- Reglas: solo lectura para la empleada.
-update configuracion set minimo_canje = 1;
+update configuracion set minimo_canje = 500;
 update niveles set puntos_por_bloque = 10;
-select pruebas.verifica((select minimo_canje from configuracion) = 200 and (select max(puntos_por_bloque) from niveles) = 2,
+select pruebas.verifica((select minimo_canje from configuracion) = 1 and (select max(puntos_por_bloque) from niveles) = 2,
   'la empleada no cambia las reglas de lealtad');
 update perfiles set rol = 'admin' where id = auth.uid();
 select pruebas.verifica((select rol from perfiles where id = auth.uid()) = 'empleada', 'la empleada no se puede hacer admin');

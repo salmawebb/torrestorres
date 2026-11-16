@@ -6,7 +6,7 @@ import logo from '../assets/logo-torres-torres.jpg'
 const MENU = [
   { a: '/', texto: 'Inicio', icono: '⌂', fin: true },
   { a: '/clientes', texto: 'Clientes', icono: '☺' },
-  { a: '/ventas', texto: 'Ventas', icono: '▤' },
+  { a: '/ventas', texto: 'Ventas', icono: '▤', admin: true },
   { a: '/canjes', texto: 'Canjes', icono: '★' },
   { a: '/empleadas', texto: 'Empleadas', icono: '◉', admin: true },
   { a: '/reportes', texto: 'Reportes', icono: '▲', admin: true },
