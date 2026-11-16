@@ -5,7 +5,7 @@ import BotonImagenTarjeta from '../components/ImagenTarjeta'
 import { useDatos } from '../context/Datos'
 import { useSesion } from '../context/Sesion'
 import { fecha, pesos, telefono } from '../lib/formato'
-import { enlaceTarjeta, enlaceWhatsApp, mensajeWhatsApp } from '../lib/lealtad'
+import { enlaceTarjeta, enlaceWhatsApp, mensajeEstadoTarjeta } from '../lib/lealtad'
 
 export default function ClienteFicha() {
   const { id } = useParams()
@@ -35,7 +35,7 @@ export default function ClienteFicha() {
   const nombreEmpleada = (uid) => usuarios.find((u) => u.id === uid)?.nombre.split(' ')[0] ?? '—'
   const whatsapp = enlaceWhatsApp(
     c.telefono,
-    mensajeWhatsApp({ nombre: c.nombre, puntos: r.puntos, nivel: r.nivel, vigencia: r.vigencia, enlace: enlaceTarjeta(c.token) }),
+    mensajeEstadoTarjeta({ nombre: c.nombre, puntos: r.puntos, nivel: r.nivel, vigencia: r.vigencia, enlace: enlaceTarjeta(c.token) }),
   )
 
   return (
