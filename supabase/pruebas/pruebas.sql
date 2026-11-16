@@ -71,6 +71,16 @@ insert into compras (cliente_id, sucursal_id, total, ticket, fecha, registrada_p
 values (1001, 1, 308, '4211', now() - interval '3 minutes', (select id from perfiles where rol = 'admin'));
 select pruebas.verifica((select puntos from compras where ticket = '4211') = 31, '$308 en Plata da 31 puntos');
 select pruebas.verifica((select registrada_por from compras where ticket = '4211') = auth.uid(), 'la venta queda a nombre de la empleada aunque mande otro ID');
+select pruebas.verifica((select atendida_por from compras where ticket = '4211') = auth.uid(), 'sin elegir quién atiende, la atendió quien tiene la sesión');
+
+-- Celular compartido: Lupita tiene la sesión y la venta la atendió Rosa.
+insert into compras (cliente_id, sucursal_id, total, ticket, atendida_por)
+values (1001, 2, 10, 'AT1', (select id from perfiles where correo = 'admin@torrestorres.mx'));
+select pruebas.verifica((select atendida_por = (select id from perfiles where correo = 'admin@torrestorres.mx') and registrada_por = auth.uid()
+  from compras where ticket = 'AT1'), 'la venta queda a nombre de quien atendió y se sabe desde qué cuenta se registró');
+select pruebas.debe_fallar($$insert into compras (cliente_id, sucursal_id, total, ticket, atendida_por)
+  values (1001, 2, 10, 'AT2', (select id from perfiles where correo = 'monica@torrestorres.mx'))$$,
+  'no se puede poner como quien atendió a una empleada desactivada');
 
 select pruebas.debe_fallar($$insert into compras (cliente_id, sucursal_id, total, ticket) values (1001, 1, 50, ' 4211 ')$$,
   'no se puede repetir el ticket en la misma sucursal');

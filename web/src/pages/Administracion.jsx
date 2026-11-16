@@ -176,7 +176,7 @@ function Respaldo() {
         <BotonExportar nombre="respaldo-compras" filas={compras} columnas={[
           { titulo: 'Fecha', valor: (v) => v.fecha }, { titulo: 'Cliente', valor: (v) => v.clienteId }, { titulo: 'Nombre', valor: (v) => cli(v.clienteId).nombre },
           { titulo: 'Sucursal', valor: (v) => v.sucursal }, { titulo: 'Ticket', valor: (v) => v.ticket }, { titulo: 'Total', valor: (v) => v.total },
-          { titulo: 'Registró', valor: (v) => v.empleadaId }, { titulo: 'Cancelada', valor: (v) => (v.cancelada ? 'Sí' : 'No') },
+          { titulo: 'Atendió', valor: (v) => v.empleadaId }, { titulo: 'Cuenta que registró', valor: (v) => v.registroId ?? v.empleadaId }, { titulo: 'Cancelada', valor: (v) => (v.cancelada ? 'Sí' : 'No') },
         ]} />
         <BotonExportar nombre="respaldo-canjes" filas={canjes} columnas={[
           { titulo: 'Fecha', valor: (v) => v.fecha }, { titulo: 'Cliente', valor: (v) => v.clienteId }, { titulo: 'Sucursal', valor: (v) => v.sucursal },
