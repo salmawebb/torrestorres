@@ -60,6 +60,8 @@ export default function RegistrarCompra() {
       [...compras.filter((v) => v.clienteId === c.id && v.id !== nueva.id), nueva],
       canjes.filter((v) => v.clienteId === c.id),
       reglas,
+      new Date(),
+      c.saldo,
     )
     setGuardada({ compra: nueva, despues, ganados: despues.puntosPorCompraId[nueva.id].puntos })
   }

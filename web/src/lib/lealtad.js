@@ -33,18 +33,30 @@ export function puntosPorCompra(total, indiceNivel, reglas = REGLAS_INICIALES) {
 // - sube un nivel por compra como máximo, sin saltarse ninguno;
 // - si pasan 6 meses sin comprar, los puntos vencen y baja un solo nivel,
 //   con el acumulado reiniciado en el mínimo del nivel al que bajó.
-export function resumenCliente(compras, canjes, reglas = REGLAS_INICIALES, hoy = new Date()) {
+// Con saldo (clientes importados del Excel) arranca con el nivel y los puntos
+// que tenía en la fecha del corte; lo anterior al corte es solo historial.
+export function resumenCliente(compras, canjes, reglas = REGLAS_INICIALES, hoy = new Date(), saldo = null) {
   const activas = compras.filter((c) => !c.cancelada).sort((a, b) => a.fecha - b.fecha)
+  const corte = saldo && saldo.fecha <= hoy ? saldo.fecha : null
   const eventos = [
     ...activas.map((c) => ({ tipo: 'compra', fecha: c.fecha, dato: c })),
     ...canjes.map((c) => ({ tipo: 'canje', fecha: c.fecha, dato: c })),
-  ].sort((a, b) => a.fecha - b.fecha)
+  ]
+    .filter((e) => !corte || e.fecha > corte)
+    .sort((a, b) => a.fecha - b.fecha)
 
   let nivel = 0
   let acumulado = 0
   let puntos = 0
   let ultimaCompra = null
   const puntosPorCompraId = {}
+  if (corte) {
+    nivel = Math.max(reglas.niveles.findIndex((n) => n.id === saldo.nivelId), 0)
+    acumulado = saldo.acumulado
+    puntos = saldo.puntos
+    ultimaCompra = saldo.venceDesde
+    for (const c of activas) if (c.fecha <= corte) puntosPorCompraId[c.id] = { puntos: c.puntos, nivel: c.nivel }
+  }
 
   const aplicarVencimiento = (hasta) => {
     if (ultimaCompra && sumarMeses(ultimaCompra, reglas.vigenciaMeses) <= hasta && puntos + acumulado > 0) {

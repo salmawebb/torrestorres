@@ -107,8 +107,22 @@ export async function cargarMovimientos(cat, clienteId) {
 }
 
 export async function cargarClientes() {
-  return (await todas(() => supabase.from('clientes').select('*').order('id'))).map(aCliente)
+  const [clientes, saldos] = await Promise.all([
+    todas(() => supabase.from('clientes').select('*').order('id')),
+    todas(() => supabase.from('saldos_iniciales').select('*').order('cliente_id')),
+  ])
+  const porCliente = Object.fromEntries(saldos.map((s) => [s.cliente_id, aSaldo(s)]))
+  return clientes.map((f) => ({ ...aCliente(f), saldo: porCliente[f.id] ?? null }))
 }
+
+// Nivel y puntos con que arrancó un cliente importado del Excel.
+const aSaldo = (s) => ({
+  fecha: new Date(s.fecha),
+  nivelId: s.nivel_id,
+  acumulado: Number(s.acumulado),
+  puntos: s.puntos,
+  venceDesde: s.vence_desde ? new Date(s.vence_desde) : null,
+})
 
 const idSucursal = (cat, nombre) => cat.sucursales.find((s) => s.nombre === nombre)?.id
 

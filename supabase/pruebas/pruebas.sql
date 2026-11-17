@@ -142,12 +142,19 @@ update niveles set puntos_por_bloque = 2 where nombre = 'Oro';
 
 -- Canjes --------------------------------------------------------------------
 
+-- El canje es abierto (mínimo 1); se prueba el mínimo poniéndolo en 200.
+reset role;
+update configuracion set minimo_canje = 200;
+set role authenticated;
 select pruebas.como('lupita@torrestorres.mx');
 select pruebas.debe_fallar($$insert into canjes (cliente_id, sucursal_id, puntos) values (1001, 1, 150)$$, 'no se puede canjear menos del mínimo');
 insert into canjes (cliente_id, sucursal_id, puntos, pesos) values (1001, 1, 200, 999);
 select pruebas.verifica((select pesos from canjes) = 50, '200 puntos = $50, calculado por la base de datos');
 select pruebas.verifica((select puntos from estado_cliente(1001)) = 31, 'el canje descuenta los puntos');
 select pruebas.debe_fallar($$insert into canjes (cliente_id, sucursal_id, puntos) values (1001, 1, 200)$$, 'no se puede canjear más de lo disponible');
+reset role;
+update configuracion set minimo_canje = 1;
+set role authenticated;
 
 -- Vencimiento y baja de nivel ---------------------------------------------------
 
@@ -179,6 +186,30 @@ select pruebas.verifica((select nivel from estado_cliente(1003)) = 'Oro' and (se
 -- Diana: en Plata no hay a dónde bajar; solo vencen los puntos.
 insert into compras (cliente_id, sucursal_id, total, ticket, fecha) values (1004, 3, 900, 'D1', now() - interval '7 months');
 select pruebas.verifica((select nivel = 'Plata' and puntos = 0 from estado_cliente(1004)), 'en Plata solo vencen los puntos');
+
+
+-- Saldo inicial (clientes importados del Excel) -------------------------------
+-- Arranca con el nivel y puntos del Excel; lo anterior al corte es historial.
+
+select pruebas.como('admin@torrestorres.mx');
+set role authenticated;
+insert into clientes (id, nombre, telefono, registro) values (5001, 'Elena', '8100005001', now() - interval '8 months');
+insert into saldos_iniciales (cliente_id, fecha, nivel_id, acumulado, puntos, ultima_compra, vence_desde)
+  values (5001, now() - interval '1 day', (select id from niveles where nombre = 'Diamante'), 6000, 0, now() - interval '7 months', null);
+insert into compras (cliente_id, sucursal_id, total, ticket, fecha, puntos) values
+  (5001, 1, 6000, 'EX1', now() - interval '7 months', 650);
+select pruebas.verifica((select puntos from compras where ticket = 'EX1') = 650, 'la compra anterior al corte conserva los puntos del Excel');
+select pruebas.verifica((select nivel = 'Diamante' and puntos = 0 from estado_cliente(5001)),
+  'con saldo vencido en el Excel conserva el nivel del Excel y no vuelve a bajar');
+insert into compras (cliente_id, sucursal_id, total, ticket) values (5001, 1, 100, 'EX2');
+select pruebas.verifica((select puntos from compras where ticket = 'EX2') = 20, 'la compra nueva gana puntos con el nivel del saldo');
+select pruebas.verifica((select nivel = 'Diamante' and puntos = 20 from estado_cliente(5001)), 'el saldo más la compra nueva');
+
+insert into clientes (id, nombre, telefono) values (5002, 'Fany', '8100005002');
+insert into saldos_iniciales (cliente_id, fecha, nivel_id, acumulado, puntos, ultima_compra, vence_desde)
+  values (5002, now() - interval '1 day', (select id from niveles where nombre = 'Oro'), 3000, 150, now() - interval '6 months 1 day', now() - interval '6 months 1 day');
+select pruebas.verifica((select nivel = 'Plata' and puntos = 0 from estado_cliente(5002)),
+  'si los puntos del saldo vencen después del corte, se aplican las reglas (pierde puntos y baja un nivel)');
 
 -- Persona inactiva y público ---------------------------------------------------
 

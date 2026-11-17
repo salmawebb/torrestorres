@@ -21,7 +21,7 @@ function useResumenes(clientes, compras, canjes, reglas) {
     const compras_ = porCliente(compras)
     const canjes_ = porCliente(canjes)
     const r = {}
-    for (const c of clientes) r[c.id] = resumenCliente(compras_[c.id] ?? [], canjes_[c.id] ?? [], reglas)
+    for (const c of clientes) r[c.id] = resumenCliente(compras_[c.id] ?? [], canjes_[c.id] ?? [], reglas, new Date(), c.saldo)
     return r
   }, [clientes, compras, canjes, reglas])
 }
