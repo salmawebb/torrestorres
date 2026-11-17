@@ -51,7 +51,7 @@ export default function ClienteFicha() {
             <p className="ficha-meta">
               #{c.id} · {telefono(c.telefono)} · 🎂 {c.cumpleanos}
             </p>
-            <button className="enlace sin-linea" onClick={() => setEditando(true)}>✏️ Editar datos</button>
+            <button className="enlace" onClick={() => setEditando(true)}>Editar datos</button>
           </div>
           <NivelBadge nivel={r.nivel} />
         </div>
