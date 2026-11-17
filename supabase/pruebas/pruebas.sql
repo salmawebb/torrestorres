@@ -211,6 +211,18 @@ insert into saldos_iniciales (cliente_id, fecha, nivel_id, acumulado, puntos, ul
 select pruebas.verifica((select nivel = 'Plata' and puntos = 0 from estado_cliente(5002)),
   'si los puntos del saldo vencen después del corte, se aplican las reglas (pierde puntos y baja un nivel)');
 
+-- Teléfono opcional y editar datos ----------------------------------------------
+
+select pruebas.como('lupita@torrestorres.mx');
+insert into clientes (id, nombre, telefono) values (5003, 'Gina', ''), (5004, 'Hilda', null);
+select pruebas.verifica((select count(*) from clientes where id in (5003, 5004) and telefono is null) = 2,
+  'se puede registrar a varias clientas sin teléfono');
+update clientes set nombre = 'Gina Ruiz', telefono = '81 0000 5003' where id = 5003;
+select pruebas.verifica((select nombre = 'Gina Ruiz' and telefono = '528100005003' from clientes where id = 5003),
+  'la empleada puede agregar el teléfono y corregir el nombre después');
+select pruebas.debe_fallar($$update clientes set telefono = '8100005002' where id = 5004$$, 'el teléfono sigue siendo único');
+select pruebas.debe_fallar($$update clientes set telefono = '123' where id = 5004$$, 'un teléfono incompleto no se acepta');
+
 -- Persona inactiva y público ---------------------------------------------------
 
 select pruebas.como('monica@torrestorres.mx');

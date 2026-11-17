@@ -5,11 +5,11 @@ export const fecha = (d) => (d ? d.toLocaleDateString('es-MX', { day: '2-digit',
 
 export const hora = (d) => d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })
 
-export const telefono = (t) => (t?.length === 12 ? `${t.slice(2, 4)} ${t.slice(4, 8)} ${t.slice(8)}` : t)
+export const telefono = (t) => (!t ? 'Sin teléfono' : t.length === 12 ? `${t.slice(2, 4)} ${t.slice(4, 8)} ${t.slice(8)}` : t)
 
 // Normaliza a lada de país 52 sin espacios, como pide el documento.
 export const normalizarTelefono = (t) => {
-  const digitos = t.replace(/\D/g, '')
+  const digitos = (t ?? '').replace(/\D/g, '')
   if (digitos.length === 10) return `52${digitos}`
   return digitos
 }

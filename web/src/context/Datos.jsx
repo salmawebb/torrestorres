@@ -57,6 +57,9 @@ function DatosDemo({ children }) {
       agregarCanje(canje) {
         setDatos((d) => ({ ...d, canjes: [...d.canjes, { ...canje, id: `c${Date.now()}` }] }))
       },
+      actualizarCliente(id, cambios) {
+        setDatos((d) => ({ ...d, clientes: d.clientes.map((c) => (c.id === id ? { ...c, ...cambios } : c)) }))
+      },
       regenerarToken(clienteId) {
         setDatos((d) => ({
           ...d,
@@ -154,6 +157,11 @@ function DatosSupabase({ children }) {
       async agregarCanje(canje) {
         await api.insertarCanje(cat, canje)
         await refrescarCliente(canje.clienteId)
+      },
+      async actualizarCliente(id, cambios) {
+        const nuevo = await api.actualizarCliente(id, cambios)
+        // Conserva el saldo inicial, que no viene en la fila del cliente.
+        setDatos((d) => ({ ...d, clientes: d.clientes.map((c) => (c.id === id ? { ...c, ...nuevo, saldo: c.saldo } : c)) }))
       },
       async regenerarToken(clienteId) {
         const token = await api.regenerarToken(clienteId)

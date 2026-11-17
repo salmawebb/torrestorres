@@ -126,16 +126,18 @@ const aSaldo = (s) => ({
 
 const idSucursal = (cat, nombre) => cat.sucursales.find((s) => s.nombre === nombre)?.id
 
-export async function insertarCliente(c) {
+const aFilaCliente = (c) => {
   const [dia, mes] = c.cumpleanos && c.cumpleanos !== '—' ? c.cumpleanos.split('/').map(Number) : [null, null]
-  const fila = fallo(
-    await supabase
-      .from('clientes')
-      .insert({ nombre: c.nombre, apellidos: c.apellidos, telefono: c.telefono, cumple_dia: dia, cumple_mes: mes, notas: c.notas })
-      .select()
-      .single(),
-  )
+  return { nombre: c.nombre, apellidos: c.apellidos, telefono: c.telefono || null, cumple_dia: dia, cumple_mes: mes, notas: c.notas }
+}
+
+export async function insertarCliente(c) {
+  const fila = fallo(await supabase.from('clientes').insert(aFilaCliente(c)).select().single())
   return aCliente(fila)
+}
+
+export async function actualizarCliente(id, c) {
+  return aCliente(fallo(await supabase.from('clientes').update(aFilaCliente(c)).eq('id', id).select().single()))
 }
 
 export async function insertarCompra(cat, compra) {
