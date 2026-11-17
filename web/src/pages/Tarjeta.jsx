@@ -10,7 +10,7 @@ import { fecha, pesos } from '../lib/formato'
 import { modoDemo } from '../lib/supabase'
 
 // Página pública que abre el cliente al escanear su QR. Solo muestra
-// nombre de pila, nivel, puntos y vigencia.
+// nombre de pila, número de cliente, nivel, puntos y vigencia.
 export default function TarjetaCliente() {
   const { token } = useParams()
   const t = useTarjeta(token)
@@ -53,6 +53,7 @@ export default function TarjetaCliente() {
         )}
         <div className="tarjeta-qr">
           <QRCodeSVG value={enlaceTarjeta(token)} size={150} fgColor="#111111" />
+          {r.numero != null && <span className="tarjeta-numero">Cliente n.º {r.numero}</span>}
           <small>Muestra este código en tienda</small>
         </div>
       </div>
@@ -70,7 +71,7 @@ const useTarjeta = modoDemo ? useTarjetaDemo : useTarjetaSupabase
 function useTarjetaDemo(token) {
   const { clientes, resumenes, reglas } = useDatos()
   const c = clientes.find((x) => x.token === token)
-  return c ? { ...resumenes[c.id], nombre: c.nombre, minimoCanje: reglas.minimoCanje } : null
+  return c ? { ...resumenes[c.id], nombre: c.nombre, numero: c.id, minimoCanje: reglas.minimoCanje } : null
 }
 
 // Con Supabase se consulta la función pública: solo nombre de pila, nivel,

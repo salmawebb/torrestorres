@@ -201,6 +201,8 @@ select pruebas.verifica((select nombre = 'María' and nivel = 'Oro' and puntos =
   from tarjeta_publica((select token_tarjeta from token_maria))), 'la tarjeta pública muestra nombre de pila, nivel y puntos');
 select pruebas.verifica((select siguiente_nivel = 'Diamante' and falta_para_siguiente > 0
   from tarjeta_publica((select token_tarjeta from token_maria))), 'la tarjeta pública dice cuánto falta para el siguiente nivel');
+select pruebas.verifica((select numero = 1001
+  from tarjeta_publica((select token_tarjeta from token_maria))), 'la tarjeta pública muestra el número de cliente');
 select pruebas.verifica((select count(*) from tarjeta_publica(gen_random_uuid())) = 0, 'un código inventado no muestra nada');
 reset role;
 
