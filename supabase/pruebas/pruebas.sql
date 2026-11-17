@@ -143,7 +143,7 @@ update niveles set puntos_por_bloque = 2 where nombre = 'Oro';
 -- Canjes --------------------------------------------------------------------
 
 select pruebas.como('lupita@torrestorres.mx');
-select pruebas.debe_fallar($$insert into canjes (cliente_id, sucursal_id, puntos) values (1001, 1, 150)$$, 'no se puede canjear menos del mínimo');
+select pruebas.debe_fallar($$insert into canjes (cliente_id, sucursal_id, puntos) values (1001, 1, 0)$$, 'no se puede canjear menos del mínimo (1 punto)');
 insert into canjes (cliente_id, sucursal_id, puntos, pesos) values (1001, 1, 200, 999);
 select pruebas.verifica((select pesos from canjes) = 50, '200 puntos = $50, calculado por la base de datos');
 select pruebas.verifica((select puntos from estado_cliente(1001)) = 31, 'el canje descuenta los puntos');
@@ -179,6 +179,26 @@ select pruebas.verifica((select nivel from estado_cliente(1003)) = 'Oro' and (se
 -- Diana: en Plata no hay a dónde bajar; solo vencen los puntos.
 insert into compras (cliente_id, sucursal_id, total, ticket, fecha) values (1004, 3, 900, 'D1', now() - interval '7 months');
 select pruebas.verifica((select nivel = 'Plata' and puntos = 0 from estado_cliente(1004)), 'en Plata solo vencen los puntos');
+
+-- Reglas de nivel configurables ---------------------------------------------------
+
+select pruebas.como('lupita@torrestorres.mx');
+update configuracion set niveles_por_compra = 0, baja_al_vencer = false;
+select pruebas.verifica((select niveles_por_compra = 1 and baja_al_vencer from configuracion),
+  'la empleada no cambia las reglas de nivel');
+
+select pruebas.como('admin@torrestorres.mx');
+update configuracion set niveles_por_compra = 0;
+select pruebas.verifica((select nivel from estado_cliente(1003)) = 'Diamante',
+  'sin límite por compra: $6,000 en una compra llega a Diamante');
+select pruebas.verifica((select puntos from compras where ticket = 'L1') = 600, 'los puntos ya ganados no cambian');
+update configuracion set niveles_por_compra = 1, baja_al_vencer = false;
+select pruebas.verifica((select nivel = 'Diamante' and acumulado = 6600 and puntos = 120 from estado_cliente(1002)),
+  'sin baja al vencer: Ana conserva Diamante y su acumulado; solo vencieron los puntos');
+select pruebas.verifica((select nivel = 'Plata' and puntos = 0 from estado_cliente(1004)), 'sin baja al vencer: los puntos vencen igual');
+update configuracion set baja_al_vencer = true;
+select pruebas.verifica((select nivel from estado_cliente(1002)) = 'Oro' and (select nivel from estado_cliente(1003)) = 'Oro',
+  'con las reglas por defecto todo vuelve a como estaba');
 
 -- Persona inactiva y público ---------------------------------------------------
 

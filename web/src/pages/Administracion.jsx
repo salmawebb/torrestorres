@@ -136,7 +136,28 @@ function Lealtad({ setAviso }) {
             </tbody>
           </table>
         </div>
-        <p className="ayuda">Si cambias las reglas, las compras ya registradas conservan los puntos que ganaron.</p>
+        <div className="fila-2">
+          <label>
+            Subir de nivel
+            <select value={f.nivelesPorCompra} onChange={num('nivelesPorCompra')}>
+              {f.niveles.slice(1, -1).map((_, i) => (
+                <option key={i} value={i + 1}>{i === 0 ? 'Sube máximo un nivel por compra' : `Sube máximo ${i + 1} niveles por compra`}</option>
+              ))}
+              <option value={0}>Sube directo a todos los niveles que alcance</option>
+            </select>
+          </label>
+          <label>
+            Al vencer los puntos
+            <select value={f.bajaAlVencer ? 'si' : 'no'} onChange={(e) => setF({ ...f, bajaAlVencer: e.target.value === 'si' })}>
+              <option value="si">Pierde los puntos y baja un nivel</option>
+              <option value="no">Pierde los puntos, pero conserva su nivel</option>
+            </select>
+          </label>
+        </div>
+        <p className="ayuda">Ejemplo: una clienta en {f.niveles[0].nombre} compra {pesos(f.niveles[f.niveles.length - 1].desde)} de una vez. {f.nivelesPorCompra === 0 || f.nivelesPorCompra >= f.niveles.length - 1
+          ? `Pasa directo a ${f.niveles[f.niveles.length - 1].nombre}.`
+          : `Sube solo a ${f.niveles[Math.min(f.nivelesPorCompra, f.niveles.length - 1)].nombre}.`}</p>
+        <p className="ayuda">Si cambias las reglas, las compras ya registradas conservan los puntos que ganaron. El nivel de cada clienta sí se vuelve a calcular con su historial, así que las dos reglas de nivel pueden cambiar el nivel de quien ya compró.</p>
         <button className="btn btn-primario">Guardar cambios</button>
       </form>
     </Tarjeta>
