@@ -26,7 +26,7 @@ Todo está en migraciones SQL; nada se crea a mano desde el panel.
 ## Permisos
 
 - Sin sesión no se lee ninguna tabla. Lo único público es `tarjeta_publica(token)`,
-  que devuelve nombre de pila, nivel, puntos y vigencia para la página del QR.
+  que devuelve nombre de pila, número de cliente, nivel, puntos y vigencia para la página del QR.
 - Empleada: registra y consulta clientes, compras y canjes; corrige datos de clientes
   y genera un QR nuevo. No edita, cancela ni borra ventas ni cambia reglas.
 - Administrador: todo lo anterior, más cancelar o corregir ventas, cambiar reglas,

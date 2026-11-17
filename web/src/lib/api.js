@@ -210,5 +210,6 @@ export async function tarjetaPublica(token) {
     vigencia: f.vigencia ? new Date(f.vigencia) : null,
     siguienteNivel: f.siguiente_nivel,
     faltaParaSiguiente: f.falta_para_siguiente == null ? null : Number(f.falta_para_siguiente),
+    numero: f.numero ?? null,
   }
 }
