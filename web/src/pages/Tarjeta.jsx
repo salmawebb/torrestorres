@@ -35,6 +35,7 @@ export default function TarjetaCliente() {
           <Marca mini />
           <span className="tarjeta-nivel">{r.nivel}</span>
         </div>
+        {r.numero != null && <p className="tarjeta-numero">Cliente n.º {r.numero}</p>}
         <p className="tarjeta-hola">Hola, {t.nombre}</p>
         <div className="tarjeta-puntos">
           <span>{r.puntos.toLocaleString('es-MX')}</span>
@@ -53,7 +54,6 @@ export default function TarjetaCliente() {
         )}
         <div className="tarjeta-qr">
           <QRCodeSVG value={enlaceTarjeta(token)} size={150} fgColor="#111111" />
-          {r.numero != null && <span className="tarjeta-numero">Cliente n.º {r.numero}</span>}
           <small>Muestra este código en tienda</small>
         </div>
       </div>
