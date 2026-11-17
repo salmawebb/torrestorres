@@ -9,6 +9,8 @@ export const REGLAS_INICIALES = {
   valorPunto: 0.25, // $ por punto al canjear
   minimoCanje: 1, // puntos mínimos para canjear (1 = canje abierto)
   vigenciaMeses: 6,
+  nivelesPorCompra: 1, // cuántos niveles puede subir con una compra (0 = sin límite)
+  bajaAlVencer: true, // al vencer los puntos, también baja un nivel
   niveles: [
     { nombre: 'Plata', desde: 0, puntosPorBloque: 1, beneficio: 'Acceso al programa y acumulación de puntos' },
     { nombre: 'Oro', desde: 2000, puntosPorBloque: 2, beneficio: 'Doble puntos, limpieza gratis y promociones especiales' },
@@ -30,9 +32,9 @@ export function puntosPorCompra(total, indiceNivel, reglas = REGLAS_INICIALES) {
 }
 
 // Resume a un cliente a partir de sus compras y canjes, aplicando:
-// - sube un nivel por compra como máximo, sin saltarse ninguno;
-// - si pasan 6 meses sin comprar, los puntos vencen y baja un solo nivel,
-//   con el acumulado reiniciado en el mínimo del nivel al que bajó.
+// - sube como máximo reglas.nivelesPorCompra niveles por compra (0 = sin límite);
+// - si pasan N meses sin comprar, los puntos vencen y, si reglas.bajaAlVencer,
+//   baja un solo nivel con el acumulado reiniciado en el mínimo de ese nivel.
 // Con saldo (clientes importados del Excel) arranca con el nivel y los puntos
 // que tenía en la fecha del corte; lo anterior al corte es solo historial.
 export function resumenCliente(compras, canjes, reglas = REGLAS_INICIALES, hoy = new Date(), saldo = null) {
@@ -61,7 +63,7 @@ export function resumenCliente(compras, canjes, reglas = REGLAS_INICIALES, hoy =
   const aplicarVencimiento = (hasta) => {
     if (ultimaCompra && sumarMeses(ultimaCompra, reglas.vigenciaMeses) <= hasta && puntos + acumulado > 0) {
       puntos = 0
-      if (nivel > 0) {
+      if (reglas.bajaAlVencer !== false && nivel > 0) {
         nivel -= 1
         acumulado = reglas.niveles[nivel].desde
       }
@@ -77,8 +79,12 @@ export function resumenCliente(compras, canjes, reglas = REGLAS_INICIALES, hoy =
       puntosPorCompraId[e.dato.id] = { puntos: ganados, nivel: e.dato.nivel ?? reglas.niveles[nivel].nombre }
       puntos += ganados
       acumulado += e.dato.total
-      const siguiente = reglas.niveles[nivel + 1]
-      if (siguiente && acumulado >= siguiente.desde) nivel += 1
+      const limite = reglas.nivelesPorCompra ?? 1
+      let subidos = 0
+      while (reglas.niveles[nivel + 1] && acumulado >= reglas.niveles[nivel + 1].desde && (limite === 0 || subidos < limite)) {
+        nivel += 1
+        subidos += 1
+      }
       ultimaCompra = e.fecha
     } else {
       puntos -= e.dato.puntos

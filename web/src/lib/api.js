@@ -72,6 +72,8 @@ const aReglas = (cfg, niveles) => ({
   valorPunto: Number(cfg.valor_punto),
   minimoCanje: cfg.minimo_canje,
   vigenciaMeses: cfg.vigencia_meses,
+  nivelesPorCompra: cfg.niveles_por_compra ?? 1,
+  bajaAlVencer: cfg.baja_al_vencer ?? true,
   niveles: niveles.map((n) => ({ id: n.id, nombre: n.nombre, desde: Number(n.desde), puntosPorBloque: n.puntos_por_bloque, beneficio: n.beneficio })),
 })
 
@@ -183,7 +185,14 @@ export async function guardarReglas(r) {
   fallo(
     await supabase
       .from('configuracion')
-      .update({ bloque_pesos: r.bloquePesos, valor_punto: r.valorPunto, minimo_canje: r.minimoCanje, vigencia_meses: r.vigenciaMeses })
+      .update({
+        bloque_pesos: r.bloquePesos,
+        valor_punto: r.valorPunto,
+        minimo_canje: r.minimoCanje,
+        vigencia_meses: r.vigenciaMeses,
+        niveles_por_compra: r.nivelesPorCompra,
+        baja_al_vencer: r.bajaAlVencer,
+      })
       .eq('id', true),
   )
   for (const n of r.niveles) {
@@ -226,5 +235,6 @@ export async function tarjetaPublica(token) {
     vigencia: f.vigencia ? new Date(f.vigencia) : null,
     siguienteNivel: f.siguiente_nivel,
     faltaParaSiguiente: f.falta_para_siguiente == null ? null : Number(f.falta_para_siguiente),
+    numero: f.numero ?? null,
   }
 }

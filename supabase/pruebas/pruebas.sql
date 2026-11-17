@@ -147,7 +147,7 @@ reset role;
 update configuracion set minimo_canje = 200;
 set role authenticated;
 select pruebas.como('lupita@torrestorres.mx');
-select pruebas.debe_fallar($$insert into canjes (cliente_id, sucursal_id, puntos) values (1001, 1, 150)$$, 'no se puede canjear menos del mínimo');
+select pruebas.debe_fallar($$insert into canjes (cliente_id, sucursal_id, puntos) values (1001, 1, 0)$$, 'no se puede canjear menos del mínimo (1 punto)');
 insert into canjes (cliente_id, sucursal_id, puntos, pesos) values (1001, 1, 200, 999);
 select pruebas.verifica((select pesos from canjes) = 50, '200 puntos = $50, calculado por la base de datos');
 select pruebas.verifica((select puntos from estado_cliente(1001)) = 31, 'el canje descuenta los puntos');
@@ -187,6 +187,25 @@ select pruebas.verifica((select nivel from estado_cliente(1003)) = 'Oro' and (se
 insert into compras (cliente_id, sucursal_id, total, ticket, fecha) values (1004, 3, 900, 'D1', now() - interval '7 months');
 select pruebas.verifica((select nivel = 'Plata' and puntos = 0 from estado_cliente(1004)), 'en Plata solo vencen los puntos');
 
+-- Reglas de nivel configurables ---------------------------------------------------
+
+select pruebas.como('lupita@torrestorres.mx');
+update configuracion set niveles_por_compra = 0, baja_al_vencer = false;
+select pruebas.verifica((select niveles_por_compra = 1 and baja_al_vencer from configuracion),
+  'la empleada no cambia las reglas de nivel');
+
+select pruebas.como('admin@torrestorres.mx');
+update configuracion set niveles_por_compra = 0;
+select pruebas.verifica((select nivel from estado_cliente(1003)) = 'Diamante',
+  'sin límite por compra: $6,000 en una compra llega a Diamante');
+select pruebas.verifica((select puntos from compras where ticket = 'L1') = 600, 'los puntos ya ganados no cambian');
+update configuracion set niveles_por_compra = 1, baja_al_vencer = false;
+select pruebas.verifica((select nivel = 'Diamante' and acumulado = 6600 and puntos = 120 from estado_cliente(1002)),
+  'sin baja al vencer: Ana conserva Diamante y su acumulado; solo vencieron los puntos');
+select pruebas.verifica((select nivel = 'Plata' and puntos = 0 from estado_cliente(1004)), 'sin baja al vencer: los puntos vencen igual');
+update configuracion set baja_al_vencer = true;
+select pruebas.verifica((select nivel from estado_cliente(1002)) = 'Oro' and (select nivel from estado_cliente(1003)) = 'Oro',
+  'con las reglas por defecto todo vuelve a como estaba');
 
 -- Saldo inicial (clientes importados del Excel) -------------------------------
 -- Arranca con el nivel y puntos del Excel; lo anterior al corte es historial.
@@ -210,6 +229,10 @@ insert into saldos_iniciales (cliente_id, fecha, nivel_id, acumulado, puntos, ul
   values (5002, now() - interval '1 day', (select id from niveles where nombre = 'Oro'), 3000, 150, now() - interval '6 months 1 day', now() - interval '6 months 1 day');
 select pruebas.verifica((select nivel = 'Plata' and puntos = 0 from estado_cliente(5002)),
   'si los puntos del saldo vencen después del corte, se aplican las reglas (pierde puntos y baja un nivel)');
+update configuracion set baja_al_vencer = false;
+select pruebas.verifica((select nivel = 'Oro' and puntos = 0 from estado_cliente(5002)),
+  'con saldo y sin baja al vencer: pierde los puntos pero conserva el nivel del Excel');
+update configuracion set baja_al_vencer = true;
 
 -- Teléfono opcional y editar datos ----------------------------------------------
 
@@ -244,6 +267,8 @@ select pruebas.verifica((select nombre = 'María' and nivel = 'Oro' and puntos =
   from tarjeta_publica((select token_tarjeta from token_maria))), 'la tarjeta pública muestra nombre de pila, nivel y puntos');
 select pruebas.verifica((select siguiente_nivel = 'Diamante' and falta_para_siguiente > 0
   from tarjeta_publica((select token_tarjeta from token_maria))), 'la tarjeta pública dice cuánto falta para el siguiente nivel');
+select pruebas.verifica((select numero = 1001
+  from tarjeta_publica((select token_tarjeta from token_maria))), 'la tarjeta pública muestra el número de cliente');
 select pruebas.verifica((select count(*) from tarjeta_publica(gen_random_uuid())) = 0, 'un código inventado no muestra nada');
 reset role;
 
