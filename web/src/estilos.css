@@ -331,6 +331,95 @@ tr.cancelada td { color: var(--tinta-suave); text-decoration: line-through; }
 .tarjeta-guardar:hover:not(:disabled) { background: rgb(214 176 106 / 12%); }
 .tarjeta-pie { color: rgb(255 255 255 / 70%); font-size: 13px; margin: 0; text-align: center; }
 
+/* ---------- Celular ---------- */
+/* La app se usa sobre todo en el celular de la sucursal: barra de menú abajo,
+   listas como tarjetas, botones de al menos 44px y la acción principal fija. */
+.barra-abajo { display: none; }
+.btn-filtros { display: none; }
+
+@media (max-width: 760px) {
+  .barra { height: 64px; padding: 0 12px; }
+  .menu-panel { top: 0; }
+  .chip-sucursal { min-height: 40px; }
+
+  .barra-abajo {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+    display: flex; background: var(--negro); border-top: 1px solid rgb(214 176 106 / 35%);
+    padding: 4px 4px calc(4px + env(safe-area-inset-bottom));
+  }
+  .barra-abajo a, .barra-abajo button {
+    flex: 1; min-height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    background: none; border: 0; border-radius: 12px; color: #b3a78f; font-size: 12px; font-weight: 600; text-decoration: none; cursor: pointer;
+  }
+  .barra-abajo .menu-icono { width: auto; font-size: 20px; line-height: 1; color: inherit; }
+  .barra-abajo a.active { color: var(--dorado-claro); background: rgb(214 176 106 / 12%); }
+  .app .contenido { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+  /* Con el teclado abierto se esconde la barra para dejar más espacio. */
+  body:has(input:focus, select:focus, textarea:focus) .barra-abajo { display: none; }
+  .aviso { bottom: calc(84px + env(safe-area-inset-bottom)); }
+
+  /* Botones y enlaces más fáciles de tocar */
+  .btn-chico { min-height: 44px; }
+  .enlace { min-height: 44px; }
+  .volver { display: inline-flex; align-items: center; min-height: 44px; margin: -10px 0; }
+  .titulo-fila { flex-wrap: nowrap; }
+  .titulo-fila .btn { padding: 0 12px; }
+
+  /* Filtros: el buscador a la vista y lo demás tras el botón "Filtros" */
+  .filtros.cerrados > label:not(.filtro-ancho) { display: none; }
+  .filtros .filtro-ancho { flex: 1 1 100%; }
+  .btn-filtros { display: inline-flex; flex: 1 1 100%; }
+
+  /* Tablas como tarjetas: renglón principal (nombre y monto) y abajo los detalles */
+  .tabla-tarjetas, .tabla-tarjetas tbody { display: block; }
+  .tabla-tarjetas thead { display: none; }
+  .tabla-tarjetas tr { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding: 12px 4px; border-bottom: 1px solid var(--linea); }
+  .tabla-tarjetas tr:last-child { border-bottom: 0; }
+  .tabla-tarjetas tr::before { content: ''; flex-basis: 100%; order: 1; }
+  .tabla-tarjetas td, .tabla-tarjetas tr:last-child td { padding: 0; border: 0; white-space: normal; text-align: left; }
+  .tabla-tarjetas .t-pri { order: 0; flex: 1 1 0; min-width: 0; font-size: 16px; font-weight: 600; }
+  .tabla-tarjetas .t-der { order: 0; margin-left: auto; font-weight: 700; text-align: right; }
+  .tabla-tarjetas .t-meta, .tabla-tarjetas .t-fin { order: 2; font-size: 13px; color: var(--tinta-suave); }
+  .tabla-tarjetas .t-fin { margin-left: auto; font-weight: 600; color: var(--tinta); }
+  .tabla-tarjetas [data-label]::before { content: attr(data-label) ' '; font-weight: 400; color: var(--tinta-suave); }
+  .tabla-tarjetas [data-label='#']::before { content: '#'; }
+  .tabla-tarjetas .t-oculto { display: none; }
+  .tabla-tarjetas .t-pri a { display: block; padding: 10px 0; margin: -10px 0; }
+  .tabla-tarjetas small { font-size: 12px; }
+  .tabla-clic.tabla-tarjetas tbody tr:active { background: var(--fondo); }
+
+  /* Usuarios (Administración) como tarjetas */
+  .tabla:has(.acciones-fila) thead { display: none; }
+  .tabla:has(.acciones-fila), .tabla:has(.acciones-fila) tbody { display: block; }
+  .tabla:has(.acciones-fila) tr { display: flex; flex-wrap: wrap; gap: 2px 10px; padding: 12px 4px; border-bottom: 1px solid var(--linea); }
+  .tabla:has(.acciones-fila) td { padding: 0; border: 0; white-space: normal; font-size: 13px; color: var(--tinta-suave); }
+  .tabla:has(.acciones-fila) td:first-child { flex-basis: 100%; font-size: 16px; font-weight: 600; color: var(--tinta); }
+  .tabla:has(.acciones-fila) td.acciones-fila { flex-basis: 100%; flex-wrap: wrap; gap: 0 18px; }
+
+  /* Ficha: los enlaces de la tarjeta como botones */
+  .ficha-tarjeta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .ficha-tarjeta > a, .ficha-tarjeta > button {
+    display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 6px 10px; text-align: center;
+    border: 1px solid var(--linea); border-radius: 10px; background: var(--campo); color: var(--negro); text-decoration: none; font-size: 14px; font-weight: 600;
+  }
+  .ficha-tarjeta > :first-child { grid-column: 1 / -1; }
+  .ficha-acciones .btn { min-height: 52px; font-size: 17px; }
+
+  /* Registrar compra: "Guardar venta" siempre a la vista */
+  .btn-fijo { position: sticky; bottom: calc(80px + env(safe-area-inset-bottom)); z-index: 5; box-shadow: 0 6px 20px rgb(0 0 0 / 35%); }
+  body:has(input:focus, select:focus, textarea:focus) .btn-fijo { bottom: 12px; }
+  .card .btn-fijo:disabled { opacity: 1; background: #8f8676; color: var(--beige); }
+  input[type='file']::file-selector-button {
+    min-height: 40px; margin-right: 10px; padding: 0 14px; border: 1px solid var(--linea); border-radius: 8px;
+    background: var(--negro); color: var(--beige); font: inherit; font-weight: 600;
+  }
+
+  /* Ventanas como hoja que sube desde abajo */
+  .modal-fondo { place-items: end center; padding: 0; }
+  .modal { max-width: none; border-radius: 24px 24px 0 0; padding-bottom: calc(22px + env(safe-area-inset-bottom)); max-height: 92vh; }
+  .modal-acciones .btn { flex: 1 1 140px; }
+}
+
 /* ---------- Responsive ---------- */
 @media (max-width: 960px) {
   .rejilla-3 { grid-template-columns: 1fr 1fr; }

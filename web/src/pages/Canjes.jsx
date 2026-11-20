@@ -37,25 +37,25 @@ export default function Canjes() {
         <h1 className="titulo">Canjes</h1>
         {esAdmin && <BotonExportar nombre="canjes" columnas={columnas} filas={lista} />}
       </div>
-      <Filtros>
+      <Filtros plegar>
         <FiltroSucursal valor={sucursal} onChange={setSucursal} />
         <FiltroFechas desde={desde} hasta={hasta} onDesde={setDesde} onHasta={setHasta} />
-        <label>Cliente<input type="search" value={cliente} onChange={(e) => setCliente(e.target.value)} /></label>
+        <label className="filtro-ancho">Cliente<input type="search" value={cliente} onChange={(e) => setCliente(e.target.value)} /></label>
       </Filtros>
       <Tarjeta>
         {lista.length ? (
           <div className="tabla-envoltura">
-            <table className="tabla">
+            <table className="tabla tabla-tarjetas">
               <thead><tr><th>Fecha</th><th>Sucursal</th><th>Cliente</th><th className="num">Puntos</th><th className="num">Descuento</th><th>Registró</th></tr></thead>
               <tbody>
                 {lista.map((v) => (
                   <tr key={v.id}>
-                    <td>{fecha(v.fecha)}</td>
-                    <td>{v.sucursal}</td>
-                    <td><Link to={`/clientes/${v.clienteId}`}>{cli(v.clienteId).nombre} {cli(v.clienteId).apellidos}</Link></td>
-                    <td className="num">{v.puntos}</td>
-                    <td className="num">{pesos(v.pesos)}</td>
-                    <td>{usuarios.find((u) => u.id === v.empleadaId)?.nombre.split(' ')[0]}</td>
+                    <td className="t-meta">{fecha(v.fecha)}</td>
+                    <td className="t-meta">{v.sucursal}</td>
+                    <td className="t-pri"><Link to={`/clientes/${v.clienteId}`}>{cli(v.clienteId).nombre} {cli(v.clienteId).apellidos}</Link></td>
+                    <td className="num t-meta" data-label="Puntos">{v.puntos}</td>
+                    <td className="num t-der">{pesos(v.pesos)}</td>
+                    <td className="t-meta" data-label="Registró">{usuarios.find((u) => u.id === v.empleadaId)?.nombre.split(' ')[0]}</td>
                   </tr>
                 ))}
               </tbody>

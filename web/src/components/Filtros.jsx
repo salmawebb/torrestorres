@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useDatos } from '../context/Datos'
 
 export function FiltroSucursal({ valor, onChange }) {
@@ -34,8 +35,19 @@ export function FiltroFechas({ desde, hasta, onDesde, onHasta }) {
   )
 }
 
-export function Filtros({ children }) {
-  return <div className="filtros">{children}</div>
+// En el celular los filtros quedan ocultos tras un botón para que la lista se
+// vea luego luego; el buscador (filtro-ancho) siempre se ve.
+export function Filtros({ children, plegar }) {
+  const [abiertos, setAbiertos] = useState(false)
+  if (!plegar) return <div className="filtros">{children}</div>
+  return (
+    <div className={`filtros ${abiertos ? '' : 'cerrados'}`}>
+      {children}
+      <button type="button" className="btn btn-secundario btn-chico solo-movil btn-filtros" aria-expanded={abiertos} onClick={() => setAbiertos(!abiertos)}>
+        {abiertos ? 'Ocultar filtros' : '⚙ Filtros'}
+      </button>
+    </div>
+  )
 }
 
 // "2026-10-06" -> rango de fechas locales

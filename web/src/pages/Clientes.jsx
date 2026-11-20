@@ -55,7 +55,7 @@ export default function Clientes() {
         </div>
       </div>
 
-      <Filtros>
+      <Filtros plegar>
         <label className="filtro-ancho">
           Buscar
           <input type="search" placeholder="Nombre, teléfono o número" value={texto} onChange={(e) => setTexto(e.target.value)} />
@@ -84,7 +84,7 @@ export default function Clientes() {
         <p className="conteo">{lista.length} clientes</p>
         {lista.length ? (
           <div className="tabla-envoltura">
-            <table className="tabla tabla-clic">
+            <table className="tabla tabla-clic tabla-tarjetas">
               <thead>
                 <tr><th>#</th><th>Nombre</th><th>Teléfono</th><th>Nivel</th><th className="num">Puntos</th><th className="num">Acumulado</th><th>Última compra</th></tr>
               </thead>
@@ -93,13 +93,13 @@ export default function Clientes() {
                   const r = resumenes[c.id]
                   return (
                     <tr key={c.id} onClick={() => navigate(`/clientes/${c.id}`)}>
-                      <td>{c.id}</td>
-                      <td><Link to={`/clientes/${c.id}`}>{c.nombre} {c.apellidos}</Link></td>
-                      <td>{telefono(c.telefono)}</td>
-                      <td><NivelBadge nivel={r.nivel} /></td>
-                      <td className="num">{r.puntos}</td>
-                      <td className="num">{pesos(r.acumulado)}</td>
-                      <td>{fecha(r.ultimaCompra)}</td>
+                      <td className="t-meta" data-label="#">{c.id}</td>
+                      <td className="t-pri"><Link to={`/clientes/${c.id}`}>{c.nombre} {c.apellidos}</Link></td>
+                      <td className="t-meta">{telefono(c.telefono)}</td>
+                      <td className="t-der"><NivelBadge nivel={r.nivel} /></td>
+                      <td className="num t-fin" data-label="Puntos">{r.puntos}</td>
+                      <td className="num t-oculto">{pesos(r.acumulado)}</td>
+                      <td className="t-oculto">{fecha(r.ultimaCompra)}</td>
                     </tr>
                   )
                 })}
