@@ -3,16 +3,16 @@ import { QRCodeCanvas } from 'qrcode.react'
 import logo from '../assets/logo-torres-torres.jpg'
 
 // Botón que arma la imagen de la tarjeta (negro, dorado y beige) con el nombre
-// de pila y el QR del cliente, para guardarla en el celular o mandarla por
+// de pila, el número y el QR del cliente, para guardarla en el celular o mandarla por
 // WhatsApp. No lleva puntos: esos se consultan al escanear el QR.
-export default function BotonImagenTarjeta({ nombre, enlace, className = 'btn btn-secundario', children = 'Descargar imagen de la tarjeta' }) {
+export default function BotonImagenTarjeta({ nombre, numero, enlace, className = 'btn btn-secundario', children = 'Descargar imagen de la tarjeta' }) {
   const qr = useRef(null)
   const [ocupado, setOcupado] = useState(false)
 
   const descargar = async () => {
     setOcupado(true)
     try {
-      const archivo = await dibujarTarjeta(nombre.split(' ')[0], qr.current.querySelector('canvas'))
+      const archivo = await dibujarTarjeta(nombre.split(' ')[0], numero, qr.current.querySelector('canvas'))
       const datos = { files: [archivo], title: 'Tarjeta Torres Torres' }
       if (navigator.canShare?.(datos)) {
         await navigator.share(datos).catch(() => {})
@@ -45,11 +45,11 @@ const NEGRO = '#111111'
 const DORADO = '#d6b06a'
 const BEIGE = '#efe4d0'
 
-async function dibujarTarjeta(nombre, qr) {
+async function dibujarTarjeta(nombre, numero, qr) {
   const estilo = getComputedStyle(document.documentElement)
   const serif = estilo.getPropertyValue('--serif').trim() || 'Georgia, serif'
   const sans = estilo.getPropertyValue('--sans').trim() || 'system-ui, sans-serif'
-  const [imagenLogo] = await Promise.all([cargarImagen(logo), document.fonts.load(`700 96px ${serif}`), document.fonts.load(`400 40px ${sans}`)])
+  const [imagenLogo] = await Promise.all([cargarImagen(logo), document.fonts.load(`700 96px ${serif}`), document.fonts.load(`400 40px ${sans}`), document.fonts.load(`600 34px ${sans}`)])
 
   const lienzo = document.createElement('canvas')
   lienzo.width = ANCHO
@@ -69,8 +69,13 @@ async function dibujarTarjeta(nombre, qr) {
   c.textAlign = 'center'
   c.fillStyle = DORADO
   c.fillRect(centro - 80, 680, 160, 3)
-  texto(c, `Hola, ${nombre}`, centro, 820, `700 88px ${serif}`, '#ffffff')
-  texto(c, 'Esta es tu tarjeta de lealtad', centro, 900, `400 44px ${sans}`, BEIGE)
+  if (numero != null) {
+    c.letterSpacing = '6px'
+    texto(c, `CLIENTE N.º ${numero}`, centro, 750, `600 34px ${sans}`, DORADO)
+    c.letterSpacing = '0px'
+  }
+  texto(c, `Hola, ${nombre}`, centro, 840, `700 88px ${serif}`, '#ffffff')
+  texto(c, 'Esta es tu tarjeta de lealtad', centro, 912, `400 44px ${sans}`, BEIGE)
 
   const lado = 540
   const marco = 40

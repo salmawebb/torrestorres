@@ -49,7 +49,7 @@ export default function ClienteNuevo() {
           ) : (
             <p className="ayuda">Sin teléfono: puedes darle la tarjeta con el QR o la imagen.</p>
           )}
-          <BotonImagenTarjeta nombre={creado.nombre} enlace={enlace} className="btn btn-secundario btn-bloque" />
+          <BotonImagenTarjeta nombre={creado.nombre} numero={creado.id} enlace={enlace} className="btn btn-secundario btn-bloque" />
           <div className="modal-acciones">
             <Link to={`/clientes/${creado.id}`} className="btn btn-secundario">Ver ficha</Link>
             <button className="btn btn-primario" onClick={() => navigate(`/clientes/${creado.id}/compra`)}>Seguir con la venta</button>
