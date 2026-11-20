@@ -43,7 +43,7 @@ GitHub los secretos `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`
 | `/clientes/:id/compra` | Todos | Total + ticket, aviso de ticket duplicado, puntos que ganará, aviso por WhatsApp |
 | `/clientes/nuevo` | Todos | Registro con teléfono normalizado a 52 y envío de la tarjeta |
 | `/ventas`, `/canjes` | Todos | Historial filtrable (la empleada solo ve sus ventas) |
-| `/empleadas`, `/reportes`, `/administracion` | Administrador | Ventas por empleada, reportes, usuarios, reglas de lealtad, importar Excel, respaldo |
+| `/empleadas`, `/reportes`, `/administracion` | Administrador | Ventas por empleada, reportes, usuarios, reglas de lealtad, respaldo |
 | `/tarjeta/:token` | Público | Tarjeta del cliente: nombre de pila, nivel, puntos, vigencia y QR |
 | `/contrasena` | Público | Crear contraseña desde la invitación o el enlace de recuperación |
 
@@ -61,5 +61,4 @@ GitHub los secretos `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`
 
 ## Pendiente
 
-- Importar el Excel actual.
 - Probar el escaneo en los celulares y tabletas de cada sucursal.
