@@ -17,12 +17,44 @@ npm run dev
 
 Abre http://localhost:5173 y entra con una cuenta creada por el administrador.
 
-## Publicar en GitHub Pages
+## Publicar en Cloudflare Pages
 
-Cada cambio en `main` se publica solo en https://salmawebb.github.io/torrestorres/
-(workflow `.github/workflows/pages.yml`). Para que use la base de datos real, agrega en
-GitHub los secretos `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`
-(Settings > Secrets and variables > Actions); sin ellos la página no arranca.
+La página se publica en Cloudflare Pages (proyecto conectado a este repositorio). Cada
+cambio en `main` se publica solo; las demás ramas reciben una dirección de prueba.
+
+Configuración del proyecto en Cloudflare (Workers & Pages > Create > Pages > Connect to Git):
+
+| Campo | Valor |
+| --- | --- |
+| Production branch | `main` |
+| Root directory | `web` |
+| Build command | `npm run build` |
+| Build output directory | `dist` |
+
+Variables (Settings > Variables and secrets, en *Production* y *Preview*):
+
+- `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`: conexión a Supabase (sin ellas la página no arranca).
+- `SITE_URL`: dirección completa de la página, por ejemplo `https://joyeriatorrestorres.pages.dev/`
+  o el dominio propio. Sirve para que WhatsApp muestre el logo al mandar la tarjeta.
+
+No se pone `BASE_PATH`: en Cloudflare la página vive en la raíz del dominio.
+`public/_redirects` hace que rutas como `/tarjeta/...` abran la página. La versión de Node
+sale de `.node-version`.
+
+Los enlaces de las tarjetas, los QR y los correos de cuenta se arman con la dirección desde
+donde se abre la página (`urlPagina` en `src/lib/formato.js`), así que no hay que cambiar
+código si cambia el dominio. Lo que sí hay que hacer al cambiar de dominio:
+
+1. En Supabase > Authentication > URL Configuration: poner el nuevo *Site URL* y agregar
+   `https://<dominio>/contrasena` a *Redirect URLs*.
+2. Cambiar `SITE_URL` en Cloudflare y volver a publicar.
+3. Cambiar la dirección del logo en `supabase/templates/*.html`.
+
+### GitHub Pages (anterior)
+
+Mientras se hace el cambio, `main` también se sigue publicando en
+https://salmawebb.github.io/torrestorres/ (workflow `.github/workflows/pages.yml`). Cuando
+Cloudflare quede funcionando se borra ese workflow y se apaga Pages en GitHub.
 
 ## Pantallas
 
@@ -43,7 +75,7 @@ GitHub los secretos `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`
 
 "Exportar a Excel" (solo administrador) descarga un archivo `.xlsx` con los filtros aplicados; las fechas y los montos quedan como fechas y números de Excel.
 
-"Escanear QR" lee la tarjeta del cliente con la cámara (BarcodeDetector en Chrome de Android, jsQR en Safari y computadoras) y abre su ficha. La cámara necesita HTTPS, que GitHub Pages ya da.
+"Escanear QR" lee la tarjeta del cliente con la cámara (BarcodeDetector en Chrome de Android, jsQR en Safari y computadoras) y abre su ficha. La cámara necesita HTTPS, que Cloudflare Pages ya da.
 
 ## Estructura
 

@@ -3,13 +3,13 @@ import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
 // BASE_PATH cambia la carpeta donde vive la página, por ejemplo /torrestorres/
-// en GitHub Pages. Sin ella se publica en la raíz del dominio.
+// en GitHub Pages. Sin ella se publica en la raíz del dominio (Cloudflare Pages).
 //
 // SITE_URL es la dirección completa de la página publicada, por ejemplo
-// https://salmawebb.github.io/torrestorres/. Con ella se agregan las etiquetas
+// https://joyeriatorrestorres.pages.dev/. Con ella se agregan las etiquetas
 // que usa WhatsApp para mostrar el logo arriba del enlace de la tarjeta.
 // WhatsApp solo acepta direcciones completas; si cambia el dominio, cambia
-// SITE_URL en .github/workflows/pages.yml.
+// SITE_URL en las variables del proyecto en Cloudflare Pages.
 export default defineConfig({
   base: process.env.BASE_PATH || '/',
   plugins: [react(), vistaPreviaWhatsApp(process.env.SITE_URL)],
