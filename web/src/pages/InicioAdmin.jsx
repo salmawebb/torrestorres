@@ -109,7 +109,7 @@ export default function InicioAdmin() {
           <Link to="/administracion?tab=usuarios" className="acceso">👤 Usuarios</Link>
           <Link to="/administracion?tab=lealtad" className="acceso">⭐ Configuración de lealtad</Link>
           <Link to="/ventas" className="acceso">✕ Cancelar ventas</Link>
-          <Link to="/administracion?tab=importar" className="acceso">⤒ Importar Excel</Link>
+          <Link to="/administracion?tab=respaldo" className="acceso">⤓ Respaldo en Excel</Link>
         </div>
       </Tarjeta>
     </div>
