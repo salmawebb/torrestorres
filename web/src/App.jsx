@@ -8,6 +8,7 @@ import ClienteFicha from './pages/ClienteFicha'
 import ClienteNuevo from './pages/ClienteNuevo'
 import Contrasena from './pages/Contrasena'
 import Clientes from './pages/Clientes'
+import DosPasos from './pages/DosPasos'
 import ElegirEmpleada from './pages/ElegirEmpleada'
 import ElegirSucursal from './pages/ElegirSucursal'
 import Empleadas from './pages/Empleadas'
@@ -40,10 +41,12 @@ function Espera({ children }) {
 }
 
 export default function App() {
-  const { usuario, esAdmin, cargando: entrando } = useSesion()
+  const { usuario, esAdmin, cargando: entrando, dosPasos } = useSesion()
   const { cargando, error } = useDatos()
   const { pathname } = useLocation()
   const publica = /^\/(tarjeta|contrasena)\b/.test(pathname)
+  // Administradora con la contraseña puesta pero sin el código todavía.
+  if (!publica && !entrando && dosPasos) return <DosPasos />
   if (!publica && (entrando || cargando)) return <Espera><p className="ayuda">Cargando…</p></Espera>
   if (!publica && error) {
     return (

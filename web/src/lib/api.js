@@ -265,6 +265,12 @@ export async function borrarCuenta(id) {
   await llamarCrearCuenta({ accion: 'borrar', id }, 'No se pudo borrar.')
 }
 
+// Si una administradora pierde su celular, otra le quita la verificación en
+// dos pasos y al volver a entrar la activa con un QR nuevo.
+export async function quitarDosPasos(id) {
+  await llamarCrearCuenta({ accion: 'quitar-dos-pasos', id }, 'No se pudo quitar la verificación.')
+}
+
 export async function cambiarContrasenaSucursal(id, contrasena) {
   await llamarCrearCuenta({ accion: 'contrasena', id, contrasena }, 'No se pudo cambiar la contraseña.')
 }

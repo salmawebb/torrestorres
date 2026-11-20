@@ -34,6 +34,11 @@ Todo está en migraciones SQL; nada se crea a mano desde el panel.
 - Las ventas y canjes quedan a nombre de quien inició sesión, aunque la página mande
   otro ID. Solo el administrador puede indicar otra persona (para importar el Excel).
 - Una cuenta desactivada (`perfiles.activa = false`) ya no ve ni registra nada.
+- Administradoras: verificación en dos pasos obligatoria (app autenticadora, TOTP).
+  Con solo la contraseña (sesión `aal1`) no ven ni cambian nada; hace falta el código
+  (`aal2`). Si una pierde su celular, otra administradora se la quita desde Usuarios
+  (`crear-cuenta`, `accion: 'quitar-dos-pasos'`). Si no queda ninguna que pueda entrar,
+  en el panel de Supabase: `delete from auth.mfa_factors where user_id = '<id>';`.
 
 ## Cuentas
 

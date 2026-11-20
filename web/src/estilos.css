@@ -455,3 +455,9 @@ tr.cancelada td { color: var(--tinta-suave); text-decoration: line-through; }
 .regalo-cumple p { margin: 0; }
 .regalo-cumple.usado { color: var(--tinta-suave); display: block; }
 .cumple-acciones { display: flex; align-items: center; gap: 8px; margin-left: auto; font-size: 13px; }
+
+/* Verificación en dos pasos */
+.pasos-lista { margin: 0; padding-left: 20px; display: grid; gap: 6px; font-size: 0.95rem; }
+.qr-dos-pasos { align-self: center; display: grid; place-items: center; min-width: 204px; min-height: 204px; padding: 12px; background: #fff; border-radius: 12px; }
+.clave-dos-pasos strong { word-break: break-all; letter-spacing: 1px; }
+.codigo-dos-pasos { font-size: 1.5rem; letter-spacing: 6px; text-align: center; }

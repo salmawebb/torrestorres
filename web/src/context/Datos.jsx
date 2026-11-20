@@ -120,6 +120,7 @@ function DatosSupabase({ children }) {
         setCat(await api.cargarCatalogos())
       },
       cambiarContrasenaSucursal: api.cambiarContrasenaSucursal,
+      quitarDosPasos: api.quitarDosPasos,
       async borrarCuenta(id) {
         await api.borrarCuenta(id)
         setCat(await api.cargarCatalogos())
