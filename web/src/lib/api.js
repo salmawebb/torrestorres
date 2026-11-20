@@ -12,6 +12,7 @@ const fallo = ({ data, error }) => {
 function traducir(error) {
   if (error.code === '23505' && error.message.includes('compras_ticket_unico')) return 'Ese número de ticket ya está registrado en esta sucursal.'
   if (error.code === '23505' && error.message.includes('telefono')) return 'Ese teléfono ya es de otro cliente.'
+  if (error.code === '23505' && error.message.includes('regalos_cumple')) return 'Ya usó su regalo de cumpleaños este año.'
   if (error.code === '42501') return 'No tienes permiso para hacer esto.'
   return error.message
 }
@@ -74,7 +75,26 @@ const aReglas = (cfg, niveles) => ({
   vigenciaMeses: cfg.vigencia_meses,
   nivelesPorCompra: cfg.niveles_por_compra ?? 1,
   bajaAlVencer: cfg.baja_al_vencer ?? true,
-  niveles: niveles.map((n) => ({ id: n.id, nombre: n.nombre, desde: Number(n.desde), puntosPorBloque: n.puntos_por_bloque, beneficio: n.beneficio })),
+  niveles: niveles.map((n) => ({
+    id: n.id,
+    nombre: n.nombre,
+    desde: Number(n.desde),
+    puntosPorBloque: n.puntos_por_bloque,
+    // Sin la migración del regalo todavía, la columna no existe (null = no se guarda).
+    regaloCumple: n.regalo_cumple == null ? null : Number(n.regalo_cumple),
+    beneficio: n.beneficio,
+  })),
+})
+
+const aRegalo = (f, sucursales, niveles) => ({
+  id: f.id,
+  clienteId: f.cliente_id,
+  fecha: new Date(f.fecha),
+  sucursal: sucursales[f.sucursal_id],
+  pesos: Number(f.pesos),
+  nivel: niveles[f.nivel_id],
+  empleadaId: f.entregado_por,
+  registroId: f.registrado_por,
 })
 
 // Catálogos: nombres por id para traducir sucursal_id y nivel_id.
@@ -98,13 +118,16 @@ export async function cargarMovimientos(cat, clienteId) {
   const suc = Object.fromEntries(cat.sucursales.map((s) => [s.id, s.nombre]))
   const niv = Object.fromEntries(cat.reglas.niveles.map((n) => [n.id, n.nombre]))
   const filtro = (q) => (clienteId ? q.eq('cliente_id', clienteId) : q)
-  const [compras, canjes] = await Promise.all([
+  const [compras, canjes, regalos] = await Promise.all([
     todas(() => filtro(supabase.from('compras').select('*')).order('id')),
     todas(() => filtro(supabase.from('canjes').select('*')).order('id')),
+    // Mientras no exista la tabla (migración pendiente), sin regalos.
+    todas(() => filtro(supabase.from('regalos_cumple').select('*')).order('id')).catch(() => []),
   ])
   return {
     compras: compras.map((f) => aCompra(f, suc, niv)),
     canjes: canjes.map((f) => aCanje(f, suc)),
+    regalos: regalos.map((f) => aRegalo(f, suc, niv)),
   }
 }
 
@@ -177,6 +200,21 @@ export async function insertarCanje(cat, canje) {
   )
 }
 
+// El monto, el nivel y el año los pone la base de datos.
+export async function insertarRegalo(cat, regalo) {
+  fallo(
+    await supabase.from('regalos_cumple').insert({
+      cliente_id: regalo.clienteId,
+      sucursal_id: idSucursal(cat, regalo.sucursal),
+      entregado_por: regalo.empleadaId,
+    }),
+  )
+}
+
+export async function borrarRegalo(id) {
+  fallo(await supabase.from('regalos_cumple').delete().eq('id', id))
+}
+
 export async function regenerarToken(clienteId) {
   return fallo(await supabase.rpc('regenerar_token_tarjeta', { p_cliente: clienteId }))
 }
@@ -196,7 +234,9 @@ export async function guardarReglas(r) {
       .eq('id', true),
   )
   for (const n of r.niveles) {
-    fallo(await supabase.from('niveles').update({ desde: n.desde, puntos_por_bloque: n.puntosPorBloque }).eq('id', n.id))
+    const cambios = { desde: n.desde, puntos_por_bloque: n.puntosPorBloque }
+    if (n.regaloCumple != null) cambios.regalo_cumple = n.regaloCumple
+    fallo(await supabase.from('niveles').update(cambios).eq('id', n.id))
   }
 }
 

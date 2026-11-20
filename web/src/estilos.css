@@ -286,10 +286,6 @@ tr.cancelada td { color: var(--tinta-suave); text-decoration: line-through; }
 .accesos { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
 .acceso { display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 0 16px; border: 1px solid var(--linea); border-radius: 12px; text-decoration: none; font-weight: 600; color: var(--tinta); background: var(--campo); }
 .acceso:hover { border-color: var(--oro); background: var(--oro-claro); }
-.pasos { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; color: var(--tinta-suave); }
-.zona-archivo { display: grid; place-items: center; min-height: 120px; border: 2px dashed var(--linea); border-radius: 12px; cursor: pointer; color: var(--tinta-suave); font-weight: 500; text-align: center; padding: 16px; }
-.zona-archivo:hover { border-color: var(--oro); }
-.zona-archivo input { display: none; }
 
 /* ---------- Modal y aviso ---------- */
 .modal-fondo { position: fixed; inset: 0; background: rgb(0 0 0 / 60%); display: grid; place-items: center; padding: 16px; z-index: 50; }
@@ -455,3 +451,9 @@ tr.cancelada td { color: var(--tinta-suave); text-decoration: line-through; }
   .fila-2, .fila-4 { grid-template-columns: 1fr; }
   .marca-chica img { height: 56px; }
 }
+
+/* Regalo de cumpleaños en la ficha */
+.regalo-cumple { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 8px; background: var(--oro-claro); font-size: 14px; margin: 0; }
+.regalo-cumple p { margin: 0; }
+.regalo-cumple.usado { color: var(--tinta-suave); display: block; }
+.cumple-acciones { display: flex; align-items: center; gap: 8px; margin-left: auto; font-size: 13px; }
