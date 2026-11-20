@@ -13,8 +13,8 @@ export const REGLAS_INICIALES = {
   bajaAlVencer: true, // al vencer los puntos, también baja un nivel
   niveles: [
     // regaloCumple: pesos de regalo para canjear en su mes de cumpleaños (0 = sin regalo).
-    { nombre: 'Plata', desde: 0, puntosPorBloque: 1, regaloCumple: 100, beneficio: 'Acceso al programa y acumulación de puntos' },
-    { nombre: 'Oro', desde: 2000, puntosPorBloque: 2, regaloCumple: 200, beneficio: 'Doble puntos, limpieza gratis y promociones especiales' },
+    { nombre: 'Plata', desde: 0, puntosPorBloque: 1, regaloCumple: 100, beneficio: 'Acceso al programa, acumulación de puntos y regalo de cumpleaños' },
+    { nombre: 'Oro', desde: 2000, puntosPorBloque: 2, regaloCumple: 200, beneficio: 'Doble puntos, limpieza gratis, regalo de cumpleaños y promociones especiales' },
     { nombre: 'Diamante', desde: 5000, puntosPorBloque: 2, regaloCumple: 300, beneficio: 'Doble puntos, limpieza gratis, regalo de cumpleaños y beneficios exclusivos' },
   ],
 }

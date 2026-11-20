@@ -6,6 +6,11 @@
 
 alter table public.niveles add column regalo_cumple numeric(10, 2) not null default 0 check (regalo_cumple >= 0);
 update public.niveles set regalo_cumple = case nombre when 'Plata' then 100 when 'Oro' then 200 when 'Diamante' then 300 else 0 end;
+-- Ahora todos los niveles tienen regalo: se menciona también en Plata y Oro.
+update public.niveles set beneficio = 'Acceso al programa, acumulación de puntos y regalo de cumpleaños'
+  where nombre = 'Plata' and beneficio = 'Acceso al programa y acumulación de puntos';
+update public.niveles set beneficio = 'Doble puntos, limpieza gratis, regalo de cumpleaños y promociones especiales'
+  where nombre = 'Oro' and beneficio = 'Doble puntos, limpieza gratis y promociones especiales';
 
 create table public.regalos_cumple (
   id bigint generated always as identity primary key,
