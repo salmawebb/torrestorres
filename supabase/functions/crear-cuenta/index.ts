@@ -32,13 +32,11 @@ Deno.serve(async (req) => {
   const cuerpo = await req.json()
   const admin = createClient(url, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
 
-  // Celular de sucursal: usuario + contraseña que pone el administrador, sin
-  // correo. Por dentro Supabase necesita un correo, así que se arma uno que
-  // nunca recibe nada (dominio .invalid, reservado para eso).
   if (cuerpo.accion === 'borrar') {
-    const id = cuerpo.id
+    const id = String(cuerpo.id ?? '')
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return responder({ error: 'No existe esa cuenta.' }, 404)
     const { data: yo } = await quien.auth.getUser()
-    if (!id || yo?.user?.id === id) return responder({ error: 'No puedes borrar tu propia cuenta.' }, 400)
+    if (yo?.user?.id === id) return responder({ error: 'No puedes borrar tu propia cuenta.' }, 400)
     const { data: perfil } = await admin.from('perfiles').select('rol, activa').eq('id', id).maybeSingle()
     if (!perfil) return responder({ error: 'No existe esa cuenta.' }, 404)
     if (perfil.rol === 'admin' && perfil.activa) {
@@ -75,6 +73,9 @@ Deno.serve(async (req) => {
     return responder({ id })
   }
 
+  // Celular de sucursal: usuario + contraseña que pone el administrador, sin
+  // correo. Por dentro Supabase necesita un correo, así que se arma uno que
+  // nunca recibe nada (dominio .invalid, reservado para eso).
   if (cuerpo.rol === 'sucursal') {
     const nombre = cuerpo.nombre?.trim()
     const usuario = cuerpo.usuario?.trim().toLowerCase()
