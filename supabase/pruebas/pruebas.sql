@@ -200,6 +200,38 @@ update configuracion set baja_al_vencer = true;
 select pruebas.verifica((select nivel from estado_cliente(1002)) = 'Oro' and (select nivel from estado_cliente(1003)) = 'Oro',
   'con las reglas por defecto todo vuelve a como estaba');
 
+-- Celular de sucursal y empleadas sin cuenta ---------------------------------
+
+-- El administrador da de alta a una empleada solo con su nombre.
+insert into perfiles (nombre, rol) values ('Ana Pérez', 'empleada');
+select pruebas.verifica((select id is not null and correo is null and activa from perfiles where nombre = 'Ana Pérez'),
+  'el administrador da de alta una empleada sin correo ni cuenta');
+select pruebas.debe_fallar($$insert into perfiles (nombre, rol) values ('Otra', 'admin')$$,
+  'sin cuenta solo se dan de alta empleadas, no administradoras');
+
+reset role;
+insert into auth.users (email, raw_user_meta_data, raw_app_meta_data) values
+  ('allende@torrestorres.mx', '{"nombre":"Sucursal Allende"}', '{"rol":"sucursal"}');
+select pruebas.verifica((select rol::text = 'sucursal' and activa from perfiles where correo = 'allende@torrestorres.mx'),
+  'la cuenta del celular se crea con rol sucursal');
+set role authenticated;
+
+select pruebas.como('allende@torrestorres.mx');
+select pruebas.verifica(not es_admin() and es_personal(), 'la cuenta del celular es personal pero no admin');
+select pruebas.debe_fallar($$insert into perfiles (nombre, rol) values ('Intrusa', 'empleada')$$,
+  'la cuenta del celular no da de alta empleadas');
+insert into compras (cliente_id, sucursal_id, total, ticket, atendida_por)
+values (1001, 2, 10, 'SU1', (select id from perfiles where nombre = 'Ana Pérez'));
+select pruebas.verifica((select atendida_por = (select id from perfiles where nombre = 'Ana Pérez') and registrada_por = auth.uid()
+  from compras where ticket = 'SU1'), 'desde el celular, la venta queda a nombre de la empleada elegida');
+select pruebas.debe_fallar($$insert into compras (cliente_id, sucursal_id, total, ticket) values (1001, 2, 10, 'SU2')$$,
+  'desde el celular hay que decir qué empleada atendió');
+select pruebas.verifica((select count(*) from perfiles where nombre = 'Ana Pérez') = 1, 'la cuenta del celular ve los nombres de las empleadas');
+reset role;
+delete from compras where ticket = 'SU1';
+set role authenticated;
+select pruebas.como('admin@torrestorres.mx');
+
 -- Persona inactiva y público ---------------------------------------------------
 
 select pruebas.como('monica@torrestorres.mx');

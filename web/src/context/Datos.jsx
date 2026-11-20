@@ -66,6 +66,9 @@ function DatosDemo({ children }) {
       crearCuenta(cuenta) {
         setDatos((d) => ({ ...d, usuarios: [...d.usuarios, { ...cuenta, id: `u${Date.now()}`, activa: true }] }))
       },
+      crearEmpleada(nombre) {
+        setDatos((d) => ({ ...d, usuarios: [...d.usuarios, { id: `u${Date.now()}`, nombre, correo: null, rol: 'empleada', activa: true }] }))
+      },
       cambiarActiva(id, activa) {
         setDatos((d) => ({ ...d, usuarios: d.usuarios.map((u) => (u.id === id ? { ...u, activa } : u)) }))
       },
@@ -161,6 +164,10 @@ function DatosSupabase({ children }) {
       },
       async crearCuenta(cuenta) {
         await api.crearCuenta(cuenta)
+        setCat(await api.cargarCatalogos())
+      },
+      async crearEmpleada(nombre) {
+        await api.crearEmpleada(nombre)
         setCat(await api.cargarCatalogos())
       },
       async cambiarActiva(id, activa) {

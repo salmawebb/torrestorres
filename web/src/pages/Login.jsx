@@ -85,7 +85,7 @@ export default function Login() {
         {modoDemo && (
           <div className="demo">
             <span>Demo sin datos reales:</span>
-            <button className="btn btn-secundario btn-chico" onClick={() => entrar(usuarios[1])}>Entrar como empleada</button>
+            <button className="btn btn-secundario btn-chico" onClick={() => entrar(usuarios.find((u) => u.rol === 'sucursal'))}>Entrar como celular de sucursal</button>
             <button className="btn btn-secundario btn-chico" onClick={() => entrar(usuarios[0])}>Entrar como administrador</button>
           </div>
         )}

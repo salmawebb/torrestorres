@@ -3,8 +3,13 @@ import { modoDemo, supabase } from '../lib/supabase'
 
 const SesionContext = createContext(null)
 
-// La sucursal elegida se guarda en sessionStorage para que no se pierda al
-// recargar la página. En modo demo también el usuario.
+// La sucursal y la empleada elegidas se guardan en sessionStorage para que no
+// se pierdan al recargar la página. En modo demo también el usuario.
+//
+// Cada sucursal entra con una cuenta compartida (rol "sucursal") desde su
+// celular, porque ahí vive el WhatsApp Business. Después de la sucursal se
+// elige "¿Qué empleada eres?"; esa empleada es `quien` y a su nombre quedan
+// las ventas. Las administradoras son ellas mismas y no eligen.
 const leer = () => {
   try {
     return JSON.parse(sessionStorage.getItem('sesion')) ?? {}
@@ -20,6 +25,13 @@ const guardar = (s) => {
   }
 }
 
+// Lo que comparten la sesión demo y la real.
+const extras = (usuario, empleada) => ({
+  esAdmin: usuario?.rol === 'admin',
+  esCelular: usuario?.rol === 'sucursal',
+  quien: usuario?.rol === 'sucursal' ? empleada : usuario,
+})
+
 export function SesionProvider({ children }) {
   return modoDemo ? <SesionDemo>{children}</SesionDemo> : <SesionSupabase>{children}</SesionSupabase>
 }
@@ -30,16 +42,18 @@ function SesionDemo({ children }) {
     setSesion(s)
     guardar(s)
   }
-  const { usuario = null, sucursal = null } = sesion
+  const { usuario = null, sucursal = null, empleada = null } = sesion
 
   const valor = {
     usuario,
     sucursal,
+    empleada,
+    ...extras(usuario, empleada),
     cargando: false,
-    esAdmin: usuario?.rol === 'admin',
-    iniciar: (u) => cambiar({ usuario: u, sucursal: null }),
+    iniciar: (u) => cambiar({ usuario: u }),
     entrar: async () => 'Correo o contraseña incorrectos.',
-    elegirSucursal: (s) => cambiar({ usuario, sucursal: s }),
+    elegirSucursal: (s) => cambiar({ ...sesion, sucursal: s }),
+    elegirEmpleada: (e) => cambiar({ ...sesion, empleada: e && { id: e.id, nombre: e.nombre } }),
     salir: () => cambiar({}),
   }
   return <SesionContext.Provider value={valor}>{children}</SesionContext.Provider>
@@ -49,6 +63,7 @@ function SesionSupabase({ children }) {
   const [usuario, setUsuario] = useState(null)
   const [cargando, setCargando] = useState(true)
   const [sucursal, setSucursal] = useState(() => leer().sucursal ?? null)
+  const [empleada, setEmpleada] = useState(() => leer().empleada ?? null)
 
   useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange((_evento, sesion) => {
@@ -75,25 +90,37 @@ function SesionSupabase({ children }) {
 
   const elegirSucursal = (s) => {
     setSucursal(s)
-    guardar({ sucursal: s })
+    guardar({ sucursal: s, empleada })
+  }
+  const elegirEmpleada = (e) => {
+    const elegida = e && { id: e.id, nombre: e.nombre }
+    setEmpleada(elegida)
+    guardar({ sucursal, empleada: elegida })
+  }
+  const olvidar = () => {
+    setSucursal(null)
+    setEmpleada(null)
+    guardar({})
   }
 
   const valor = {
     usuario,
     sucursal,
+    empleada,
+    ...extras(usuario, empleada),
     cargando,
-    esAdmin: usuario?.rol === 'admin',
     async entrar(correo, contrasena) {
       const { data, error } = await supabase.auth.signInWithPassword({ email: correo, password: contrasena })
       if (error) return 'Correo o contraseña incorrectos.'
       const { data: perfil } = await supabase.from('perfiles').select('activa').eq('id', data.user.id).maybeSingle()
       if (!perfil?.activa) return 'Tu cuenta está desactivada. Habla con el administrador.'
-      elegirSucursal(null)
+      olvidar()
       return null
     },
     elegirSucursal,
+    elegirEmpleada,
     async salir() {
-      elegirSucursal(null)
+      olvidar()
       await supabase.auth.signOut()
     },
   }

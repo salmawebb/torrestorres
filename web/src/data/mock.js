@@ -4,10 +4,11 @@ export const SUCURSALES = ['Allende', 'Olmos', 'Hidalgo']
 
 export const USUARIOS = [
   { id: 'u1', nombre: 'Rosa Torres', correo: 'admin@torrestorres.mx', rol: 'admin', activa: true },
-  { id: 'u2', nombre: 'Lupita Garza', correo: 'lupita@torrestorres.mx', rol: 'empleada', activa: true },
-  { id: 'u3', nombre: 'Karla Méndez', correo: 'karla@torrestorres.mx', rol: 'empleada', activa: true },
-  { id: 'u4', nombre: 'Daniela Ríos', correo: 'daniela@torrestorres.mx', rol: 'empleada', activa: true },
-  { id: 'u5', nombre: 'Mónica Salas', correo: 'monica@torrestorres.mx', rol: 'empleada', activa: false },
+  { id: 'u2', nombre: 'Lupita Garza', correo: null, rol: 'empleada', activa: true },
+  { id: 'u3', nombre: 'Karla Méndez', correo: null, rol: 'empleada', activa: true },
+  { id: 'u4', nombre: 'Daniela Ríos', correo: null, rol: 'empleada', activa: true },
+  { id: 'u5', nombre: 'Mónica Salas', correo: null, rol: 'empleada', activa: false },
+  { id: 'u6', nombre: 'Celular Allende', correo: 'allende@torrestorres.mx', rol: 'sucursal', activa: true },
 ]
 
 const NOMBRES = [

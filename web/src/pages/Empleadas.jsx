@@ -34,7 +34,7 @@ export default function Empleadas() {
       <div className="pagina">
         <h1 className="titulo">Empleadas</h1>
         <Tarjeta titulo="Todavía no hay empleadas">
-          <p className="ayuda">Cuando crees una cuenta con rol de empleada en Usuarios, aquí vas a ver sus ventas por semana y por mes.</p>
+          <p className="ayuda">Cuando agregues empleadas en Administración › Usuarios, aquí vas a ver sus ventas por semana y por mes.</p>
         </Tarjeta>
       </div>
     )

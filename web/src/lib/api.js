@@ -200,6 +200,12 @@ export async function crearCuenta({ nombre, correo, rol }) {
   }
 }
 
+// Las empleadas no tienen cuenta: son solo su nombre. Entran desde el celular
+// de la sucursal y eligen "¿Qué empleada eres?".
+export async function crearEmpleada(nombre) {
+  fallo(await supabase.from('perfiles').insert({ nombre, rol: 'empleada' }))
+}
+
 export async function enviarRecuperacion(correo) {
   fallo(await supabase.auth.resetPasswordForEmail(correo, { redirectTo: urlPagina('contrasena') }))
 }

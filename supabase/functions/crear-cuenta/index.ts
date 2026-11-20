@@ -1,4 +1,4 @@
-// Crea la cuenta de una empleada o administrador y le manda la invitación por
+// Crea la cuenta de un administrador o del celular de una sucursal y le manda la invitación por
 // correo para que ponga su contraseña. Solo la puede usar un administrador.
 // Necesita la llave de servicio, por eso no se hace desde la página.
 import { createClient } from 'npm:@supabase/supabase-js@2'
@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
   if (errorRol || !esAdmin) return responder({ error: 'Solo el administrador puede crear cuentas.' }, 403)
 
   const { nombre, correo, rol, redirigir } = await req.json()
-  if (!nombre?.trim() || !correo?.trim() || !['admin', 'empleada'].includes(rol)) {
+  if (!nombre?.trim() || !correo?.trim() || !['admin', 'sucursal', 'empleada'].includes(rol)) {
     return responder({ error: 'Faltan el nombre, el correo o el rol.' }, 400)
   }
 

@@ -25,7 +25,7 @@ export function Marca({ chica, mini }) {
 }
 
 export default function Layout() {
-  const { usuario, sucursal, esAdmin, salir } = useSesion()
+  const { quien, sucursal, esAdmin, esCelular, salir } = useSesion()
   const [menuAbierto, setMenuAbierto] = useState(false)
   const navigate = useNavigate()
   const opciones = MENU.filter((m) => !m.admin || esAdmin)
@@ -39,7 +39,13 @@ export default function Layout() {
           <button className="chip-sucursal" onClick={() => navigate('/sucursal')} title="Cambiar sucursal">
             📍 {sucursal}
           </button>
-          <span className="barra-usuario solo-escritorio">{usuario.nombre}</span>
+          {esCelular ? (
+            <button className="chip-sucursal" onClick={() => navigate('/empleada')} title="Cambiar de empleada">
+              👤 {quien.nombre.split(' ')[0]}
+            </button>
+          ) : (
+            <span className="barra-usuario solo-escritorio">{quien.nombre}</span>
+          )}
         </div>
       </header>
 
@@ -47,7 +53,7 @@ export default function Layout() {
         <nav className={`menu ${menuAbierto ? 'abierto' : ''}`} onClick={() => setMenuAbierto(false)}>
           <div className="menu-panel" onClick={(e) => e.stopPropagation()}>
             <div className="menu-usuario">
-              <strong>{usuario.nombre}</strong>
+              <strong>{quien.nombre}</strong>
               <span>{esAdmin ? 'Administrador' : 'Empleada'} · {sucursal}</span>
             </div>
             {opciones.map((m) => (
@@ -56,6 +62,7 @@ export default function Layout() {
                 {m.texto}
               </NavLink>
             ))}
+            {esCelular && <button className="menu-salir" onClick={() => navigate('/empleada')}>Cambiar de empleada</button>}
             <button className="menu-salir" onClick={salir}>Cerrar sesión</button>
           </div>
         </nav>

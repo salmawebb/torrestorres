@@ -11,13 +11,14 @@ const paraInput = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).t
 export default function RegistrarCompra() {
   const { id } = useParams()
   const { clientes, compras, canjes, usuarios, resumenes, reglas, agregarCompra } = useDatos()
-  const { usuario, sucursal } = useSesion()
+  const { usuario, quien, sucursal } = useSesion()
   const navigate = useNavigate()
   // Con un solo celular por sucursal, la venta va a nombre de quien atiende,
-  // no de la cuenta abierta. Sale quien inició sesión; si atiende otra, lo cambia.
-  // Se muestran todas porque una empleada puede cubrir en otra sucursal.
-  const personal = usuarios.filter((u) => u.activa && (u.rol === 'empleada' || u.id === usuario.id))
-  const [atiende, setAtiende] = useState(usuario.id)
+  // no de la cuenta abierta. Sale la empleada que se eligió al entrar (o la
+  // administradora); si atiende otra, lo cambia. Se muestran todas porque una
+  // empleada puede cubrir en otra sucursal. La cuenta del celular no es persona.
+  const personal = usuarios.filter((u) => u.activa && (u.rol === 'empleada' || u.id === quien.id))
+  const [atiende, setAtiende] = useState(quien.id)
   const [total, setTotal] = useState('')
   const [ticket, setTicket] = useState('')
   const [cambiarFecha, setCambiarFecha] = useState(false)
