@@ -58,6 +58,12 @@ function DatosDemo({ children }) {
       agregarCanje(canje) {
         setDatos((d) => ({ ...d, canjes: [...d.canjes, { ...canje, id: `c${Date.now()}` }] }))
       },
+      agregarRegalo(regalo) {
+        setDatos((d) => ({ ...d, regalos: [...d.regalos, { ...regalo, id: `g${Date.now()}` }] }))
+      },
+      borrarRegalo(id) {
+        setDatos((d) => ({ ...d, regalos: d.regalos.filter((g) => g.id !== id) }))
+      },
       actualizarCliente(id, cambios) {
         setDatos((d) => ({ ...d, clientes: d.clientes.map((c) => (c.id === id ? { ...c, ...cambios } : c)) }))
       },
@@ -94,7 +100,7 @@ function DatosDemo({ children }) {
   return <DatosContext.Provider value={valor}>{children}</DatosContext.Provider>
 }
 
-const VACIO = { clientes: [], compras: [], canjes: [] }
+const VACIO = { clientes: [], compras: [], canjes: [], regalos: [] }
 
 // Modo real: los datos vienen de Supabase y cada cambio se guarda ahí.
 function DatosSupabase({ children }) {
@@ -140,6 +146,7 @@ function DatosSupabase({ children }) {
         ...d,
         compras: [...d.compras.filter((v) => v.clienteId !== clienteId), ...m.compras],
         canjes: [...d.canjes.filter((v) => v.clienteId !== clienteId), ...m.canjes],
+        regalos: [...d.regalos.filter((v) => v.clienteId !== clienteId), ...m.regalos],
       }))
       return m
     },
@@ -166,6 +173,14 @@ function DatosSupabase({ children }) {
       async agregarCanje(canje) {
         await api.insertarCanje(cat, canje)
         await refrescarCliente(canje.clienteId)
+      },
+      async agregarRegalo(regalo) {
+        await api.insertarRegalo(cat, regalo)
+        await refrescarCliente(regalo.clienteId)
+      },
+      async borrarRegalo(id) {
+        await api.borrarRegalo(id)
+        setDatos((d) => ({ ...d, regalos: d.regalos.filter((g) => g.id !== id) }))
       },
       async actualizarCliente(id, cambios) {
         const nuevo = await api.actualizarCliente(id, cambios)

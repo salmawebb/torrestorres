@@ -278,6 +278,52 @@ select pruebas.verifica((select nombre = 'Gina Ruiz' and telefono = '52810000500
 select pruebas.debe_fallar($$update clientes set telefono = '8100005002' where id = 5004$$, 'el teléfono sigue siendo único');
 select pruebas.debe_fallar($$update clientes set telefono = '123' where id = 5004$$, 'un teléfono incompleto no se acepta');
 
+-- Regalo de cumpleaños ------------------------------------------------------------
+-- Dinero según el nivel, solo en el mes de su cumpleaños, una vez por año.
+
+select pruebas.como('lupita@torrestorres.mx');
+update clientes set cumple_dia = 1, cumple_mes = extract(month from now() at time zone 'America/Monterrey')
+  where id in (5001, 1002, 1004);
+update clientes set cumple_dia = 1, cumple_mes = extract(month from now() at time zone 'America/Monterrey' + interval '2 months')
+  where id = 1003;
+select pruebas.verifica((select string_agg(nombre || ' ' || regalo_cumple, ', ' order by desde) from niveles) = 'Plata 100.00, Oro 200.00, Diamante 300.00',
+  'al empezar el regalo es de $100, $200 y $300 según el nivel');
+insert into regalos_cumple (cliente_id, sucursal_id, entregado_por, pesos)
+  values (5001, 1, (select id from perfiles where nombre = 'Ana Pérez'), 9999);
+select pruebas.verifica((select registrado_por = auth.uid() and entregado_por = (select id from perfiles where nombre = 'Ana Pérez')
+  and anio = extract(year from now() at time zone 'America/Monterrey') and nivel_id = (select id from niveles where nombre = 'Diamante')
+  and pesos = 300 from regalos_cumple where cliente_id = 5001), 'el regalo en Diamante es de $300 y guarda quién lo dio, desde qué cuenta y el año');
+select pruebas.verifica((select puntos from estado_cliente(5001)) = 20, 'el regalo no toca los puntos');
+select pruebas.debe_fallar($$insert into regalos_cumple (cliente_id, sucursal_id) values (5001, 2)$$,
+  'no se usa dos veces el mismo año');
+insert into regalos_cumple (cliente_id, sucursal_id) values (1002, 1);
+select pruebas.verifica((select pesos from regalos_cumple where cliente_id = 1002) = 200, 'en Oro el regalo es de $200');
+select pruebas.debe_fallar($$insert into regalos_cumple (cliente_id, sucursal_id) values (1003, 1)$$,
+  'fuera del mes de su cumpleaños no se canjea');
+select pruebas.debe_fallar($$insert into regalos_cumple (cliente_id, sucursal_id) values (5003, 1)$$,
+  'sin cumpleaños registrado no se canjea');
+update niveles set regalo_cumple = 1000 where nombre = 'Plata';
+select pruebas.verifica((select regalo_cumple from niveles where nombre = 'Plata') = 100, 'la empleada no cambia el monto del regalo');
+delete from regalos_cumple where cliente_id = 5001;
+select pruebas.verifica((select count(*) from regalos_cumple) = 2, 'la empleada no borra un regalo canjeado');
+
+select pruebas.como('admin@torrestorres.mx');
+update niveles set regalo_cumple = 0 where nombre = 'Plata';
+select pruebas.debe_fallar($$insert into regalos_cumple (cliente_id, sucursal_id) values (1004, 1)$$,
+  'con $0 en su nivel no hay regalo');
+update niveles set regalo_cumple = 150 where nombre = 'Plata';
+insert into regalos_cumple (cliente_id, sucursal_id) values (1004, 1);
+select pruebas.verifica((select pesos = 150 and entregado_por = auth.uid() from regalos_cumple where cliente_id = 1004),
+  'el administrador cambia el monto; sin elegir, lo dio quien tiene la sesión');
+delete from regalos_cumple where cliente_id = 1004;
+select pruebas.verifica((select count(*) from regalos_cumple where cliente_id = 1004) = 0, 'el administrador borra un regalo registrado por error');
+update niveles set regalo_cumple = 100 where nombre = 'Plata';
+
+select pruebas.como('allende@torrestorres.mx');
+select pruebas.debe_fallar($$insert into regalos_cumple (cliente_id, sucursal_id) values (1004, 1)$$,
+  'desde el celular hay que decir qué empleada atiende');
+select pruebas.verifica((select count(*) from regalos_cumple) = 2, 'el celular de la sucursal ve los regalos canjeados');
+
 -- Persona inactiva y público ---------------------------------------------------
 
 select pruebas.como('monica@torrestorres.mx');

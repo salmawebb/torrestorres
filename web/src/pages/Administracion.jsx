@@ -224,13 +224,14 @@ function Lealtad({ setAviso }) {
         <p className="resaltado">{f.minimoCanje} puntos = {pesos(f.minimoCanje * f.valorPunto)} de descuento</p>
         <div className="tabla-envoltura">
           <table className="tabla">
-            <thead><tr><th>Nivel</th><th>Desde compra acumulada ($)</th><th>Puntos por cada ${f.bloquePesos}</th><th>Beneficio</th></tr></thead>
+            <thead><tr><th>Nivel</th><th>Desde compra acumulada ($)</th><th>Puntos por cada ${f.bloquePesos}</th><th>Regalo de cumpleaños ($)</th><th>Beneficio</th></tr></thead>
             <tbody>
               {f.niveles.map((n, i) => (
                 <tr key={n.nombre}>
                   <td><strong>{n.nombre}</strong></td>
                   <td><input type="number" min="0" disabled={i === 0} value={n.desde} onChange={nivel(i, 'desde')} /></td>
                   <td><input type="number" min="1" value={n.puntosPorBloque} onChange={nivel(i, 'puntosPorBloque')} /></td>
+                  <td><input type="number" min="0" step="10" value={n.regaloCumple ?? 0} disabled={n.regaloCumple == null} onChange={nivel(i, 'regaloCumple')} /></td>
                   <td className="beneficio">{n.beneficio}</td>
                 </tr>
               ))}
@@ -258,6 +259,7 @@ function Lealtad({ setAviso }) {
         <p className="ayuda">Ejemplo: una clienta en {f.niveles[0].nombre} compra {pesos(f.niveles[f.niveles.length - 1].desde)} de una vez. {f.nivelesPorCompra === 0 || f.nivelesPorCompra >= f.niveles.length - 1
           ? `Pasa directo a ${f.niveles[f.niveles.length - 1].nombre}.`
           : `Sube solo a ${f.niveles[Math.min(f.nivelesPorCompra, f.niveles.length - 1)].nombre}.`}</p>
+        <p className="ayuda">Regalo de cumpleaños: lo que la clienta puede canjear, una vez, durante todo su mes de cumpleaños, según su nivel. Pon $0 si un nivel no tiene regalo.</p>
         <p className="ayuda">Si cambias las reglas, las compras ya registradas conservan los puntos que ganaron. El nivel de cada clienta sí se vuelve a calcular con su historial, así que las dos reglas de nivel pueden cambiar el nivel de quien ya compró.</p>
         <button className="btn btn-primario">Guardar cambios</button>
       </form>
@@ -285,7 +287,7 @@ function Importar() {
 }
 
 function Respaldo() {
-  const { compras, clientes, canjes, usuarios } = useDatos()
+  const { compras, clientes, canjes, regalos, usuarios } = useDatos()
   const cli = (id) => clientes.find((c) => c.id === id)
   const nombreCompleto = (id) => { const c = cli(id); return c ? `${c.nombre} ${c.apellidos}`.trim() : '' }
   const empleada = (id) => usuarios.find((u) => u.id === id)?.nombre ?? id
@@ -305,6 +307,11 @@ function Respaldo() {
         <BotonExportar nombre="respaldo-canjes" filas={canjes} columnas={[
           { titulo: 'Fecha', valor: (v) => v.fecha }, { titulo: 'Cliente', valor: (v) => v.clienteId }, { titulo: 'Nombre', valor: (v) => nombreCompleto(v.clienteId) },
           { titulo: 'Sucursal', valor: (v) => v.sucursal }, { titulo: 'Puntos', valor: (v) => v.puntos }, { titulo: 'Descuento', valor: (v) => v.pesos },
+        ]} />
+        <BotonExportar nombre="respaldo-regalos-cumpleanos" filas={regalos} columnas={[
+          { titulo: 'Fecha', valor: (v) => v.fecha }, { titulo: 'Cliente', valor: (v) => v.clienteId }, { titulo: 'Nombre', valor: (v) => nombreCompleto(v.clienteId) },
+          { titulo: 'Sucursal', valor: (v) => v.sucursal }, { titulo: 'Nivel', valor: (v) => v.nivel }, { titulo: 'Regalo', valor: (v) => v.pesos },
+          { titulo: 'Atendió', valor: (v) => empleada(v.empleadaId) }, { titulo: 'Cuenta que registró', valor: (v) => empleada(v.registroId ?? v.empleadaId) },
         ]} />
       </div>
     </Tarjeta>

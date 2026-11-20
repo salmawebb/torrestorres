@@ -366,3 +366,9 @@ tr.cancelada td { color: var(--tinta-suave); text-decoration: line-through; }
   .fila-2, .fila-4 { grid-template-columns: 1fr; }
   .marca-chica img { height: 56px; }
 }
+
+/* Regalo de cumpleaños en la ficha */
+.regalo-cumple { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 8px; background: var(--oro-claro); font-size: 14px; margin: 0; }
+.regalo-cumple p { margin: 0; }
+.regalo-cumple.usado { color: var(--tinta-suave); display: block; }
+.cumple-acciones { display: flex; align-items: center; gap: 8px; margin-left: auto; font-size: 13px; }

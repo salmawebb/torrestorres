@@ -1,4 +1,4 @@
-import { urlPagina } from './formato'
+import { pesos, urlPagina } from './formato'
 
 // Reglas del programa de lealtad (documento "Sistema de ventas y lealtad").
 // En la versión final estas reglas vendrán de la tabla de configuración;
@@ -12,9 +12,10 @@ export const REGLAS_INICIALES = {
   nivelesPorCompra: 1, // cuántos niveles puede subir con una compra (0 = sin límite)
   bajaAlVencer: true, // al vencer los puntos, también baja un nivel
   niveles: [
-    { nombre: 'Plata', desde: 0, puntosPorBloque: 1, beneficio: 'Acceso al programa y acumulación de puntos' },
-    { nombre: 'Oro', desde: 2000, puntosPorBloque: 2, beneficio: 'Doble puntos, limpieza gratis y promociones especiales' },
-    { nombre: 'Diamante', desde: 5000, puntosPorBloque: 2, beneficio: 'Doble puntos, limpieza gratis, regalo de cumpleaños y beneficios exclusivos' },
+    // regaloCumple: pesos de regalo para canjear en su mes de cumpleaños (0 = sin regalo).
+    { nombre: 'Plata', desde: 0, puntosPorBloque: 1, regaloCumple: 100, beneficio: 'Acceso al programa y acumulación de puntos' },
+    { nombre: 'Oro', desde: 2000, puntosPorBloque: 2, regaloCumple: 200, beneficio: 'Doble puntos, limpieza gratis y promociones especiales' },
+    { nombre: 'Diamante', desde: 5000, puntosPorBloque: 2, regaloCumple: 300, beneficio: 'Doble puntos, limpieza gratis, regalo de cumpleaños y beneficios exclusivos' },
   ],
 }
 
@@ -134,3 +135,26 @@ export function enlaceWhatsApp(telefono, texto) {
 }
 
 export const enlaceTarjeta = (token) => urlPagina(`tarjeta/${token}`)
+
+// Regalo de cumpleaños: dinero para canjear durante todo su mes de cumpleaños,
+// según su nivel, una vez por año. La base de datos revisa lo mismo al guardar.
+export function regaloCumple(cliente, resumen, reglas, regalos, hoy = new Date()) {
+  const mes = cliente.cumpleanos && cliente.cumpleanos !== '—' ? Number(cliente.cumpleanos.split('/')[1]) : null
+  const anio = hoy.getFullYear()
+  const usado = regalos.find((g) => g.clienteId === cliente.id && g.fecha.getFullYear() === anio) ?? null
+  return {
+    enSuMes: mes === hoy.getMonth() + 1,
+    monto: reglas.niveles[resumen.indiceNivel]?.regaloCumple ?? 0,
+    usado,
+  }
+}
+
+// Recordatorio unos días antes del cumpleaños, desde Cumpleaños de la semana.
+export function mensajeRecordatorioCumple({ nombre, monto, nivel, enlace }) {
+  const partes = [`Hola ${nombre}, en Joyería Torres Torres recordamos que ya viene tu cumpleaños.`]
+  if (monto > 0) {
+    partes.push(`Por tu nivel ${nivel} tienes ${pesos(monto)} de regalo para canjear en cualquiera de nuestras sucursales durante todo tu mes de cumpleaños.`)
+  }
+  partes.push(`Consulta tu tarjeta aquí: ${enlace}`)
+  return partes.join(' ')
+}
