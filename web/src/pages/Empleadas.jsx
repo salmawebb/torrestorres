@@ -11,11 +11,12 @@ const inicioDeMes = () => {
 export default function Empleadas() {
   const { usuarios, compras } = useDatos()
   const empleadas = usuarios.filter((u) => u.rol === 'empleada')
-  const [elegida, setElegida] = useState(empleadas[0].id)
+  const [elegida, setElegida] = useState(empleadas[0]?.id)
   const suma = (lista) => ({ total: lista.reduce((s, v) => s + v.total, 0), ventas: lista.length })
   const deEmpleada = (id) => compras.filter((v) => v.empleadaId === id && !v.cancelada)
 
-  const ventas = deEmpleada(elegida)
+  const u = empleadas.find((x) => x.id === elegida) ?? empleadas[0]
+  const ventas = deEmpleada(u?.id)
   const semanas = Array.from({ length: 8 }, (_, i) => {
     const desde = sumarDias(inicioDeSemana(), -7 * i)
     const hasta = sumarDias(desde, 7)
@@ -27,14 +28,24 @@ export default function Empleadas() {
     const hasta = new Date(m.getFullYear(), m.getMonth() - i + 1, 1)
     return { desde, ...suma(ventas.filter((v) => v.fecha >= desde && v.fecha < hasta)) }
   })
-  const u = usuarios.find((x) => x.id === elegida)
+
+  if (!u) {
+    return (
+      <div className="pagina">
+        <h1 className="titulo">Empleadas</h1>
+        <Tarjeta titulo="Todavía no hay empleadas">
+          <p className="ayuda">Cuando agregues empleadas en Administración › Usuarios, aquí vas a ver sus ventas por semana y por mes.</p>
+        </Tarjeta>
+      </div>
+    )
+  }
 
   return (
     <div className="pagina">
       <h1 className="titulo">Empleadas</h1>
       <div className="chips" role="tablist">
         {empleadas.map((e) => (
-          <button key={e.id} role="tab" aria-selected={e.id === elegida} className={`chip ${e.id === elegida ? 'activo' : ''}`} onClick={() => setElegida(e.id)}>
+          <button key={e.id} role="tab" aria-selected={e.id === u.id} className={`chip ${e.id === u.id ? 'activo' : ''}`} onClick={() => setElegida(e.id)}>
             {e.nombre}{!e.activa && ' (inactiva)'}
           </button>
         ))}

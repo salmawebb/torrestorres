@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Aviso, BotonExportar, Modal, Tarjeta, useAviso } from '../components/Comunes'
 import { useDatos } from '../context/Datos'
-import { pesos } from '../lib/formato'
+import { useSesion } from '../context/Sesion'
+import { pesos, usuarioDeCorreo } from '../lib/formato'
 
 const PESTANAS = [
   { id: 'usuarios', texto: 'Usuarios' },
@@ -32,8 +33,34 @@ export default function Administracion() {
   )
 }
 
+const ROLES = {
+  empleada: 'Empleada',
+  sucursal: 'Celular de sucursal',
+  admin: 'Administrador',
+}
+
 function Usuarios({ setAviso }) {
-  const { usuarios, crearCuenta, cambiarActiva, enviarRecuperacion } = useDatos()
+  const { usuarios, compras, canjes, clientes, crearCuenta, crearEmpleada, cambiarActiva, enviarRecuperacion, cambiarContrasenaSucursal, borrarCuenta } = useDatos()
+  const [contrasena, setContrasena] = useState(null)
+  const [borrar, setBorrar] = useState(null)
+  const { usuario: yo } = useSesion()
+  const adminsActivas = usuarios.filter((u) => u.rol === 'admin' && u.activa).length
+  // Nadie se desactiva a sí misma y siempre queda una administradora activa
+  // (la base de datos revisa lo mismo).
+  const puedeAlternar = (u) => u.id !== yo?.id && !(u.rol === 'admin' && u.activa && adminsActivas <= 1)
+  // Borrar solo lo que no tiene historial (creado por error o mal escrito); lo
+  // demás se desactiva. La función crear-cuenta lo vuelve a revisar.
+  const tieneHistorial = (id) =>
+    compras.some((v) => v.empleadaId === id || v.registroId === id) ||
+    canjes.some((c) => c.empleadaId === id) ||
+    clientes.some((c) => c.registradoPor === id)
+  const puedeBorrar = (u) => puedeAlternar(u) && !tieneHistorial(u.id)
+  const confirmarBorrar = async () => {
+    setOcupado(true)
+    await intentar(() => borrarCuenta(borrar.id), `Se borró ${borrar.nombre}.`)
+    setOcupado(false)
+    setBorrar(null)
+  }
   const [nuevo, setNuevo] = useState(null)
   const [ocupado, setOcupado] = useState(false)
   const intentar = async (accion, mensaje) => {
@@ -44,53 +71,127 @@ function Usuarios({ setAviso }) {
       setAviso(`No se pudo completar: ${e.message}`)
     }
   }
-  const alternar = (u) => intentar(() => cambiarActiva(u.id, !u.activa), u.activa ? `${u.nombre} ya no puede entrar.` : `${u.nombre} puede entrar de nuevo.`)
+  const alternar = (u) => intentar(
+    () => cambiarActiva(u.id, !u.activa),
+    u.rol === 'empleada'
+      ? (u.activa ? `${u.nombre} ya no sale en la lista de empleadas.` : `${u.nombre} vuelve a salir en la lista de empleadas.`)
+      : (u.activa ? `${u.nombre} ya no puede entrar.` : `${u.nombre} puede entrar de nuevo.`),
+  )
   const restablecer = (u) => intentar(() => enviarRecuperacion(u.correo), `Se envió a ${u.correo} un enlace para restablecer la contraseña.`)
+  const guardarContrasena = async (e) => {
+    e.preventDefault()
+    setOcupado(true)
+    await intentar(() => cambiarContrasenaSucursal(contrasena.u.id, contrasena.valor), `Listo, ${contrasena.u.nombre} ya entra con la contraseña nueva.`)
+    setOcupado(false)
+    setContrasena(null)
+  }
   const crear = async (e) => {
     e.preventDefault()
     setOcupado(true)
-    await intentar(
-      () => crearCuenta({ nombre: nuevo.nombre.trim(), correo: nuevo.correo.trim().toLowerCase(), rol: nuevo.rol }),
-      `Se creó la cuenta de ${nuevo.nombre}. Le llegará un correo para poner su contraseña.`,
-    )
+    const nombre = nuevo.nombre.trim()
+    const usuario = nuevo.usuario.trim().toLowerCase()
+    await (nuevo.rol === 'empleada'
+      ? intentar(() => crearEmpleada(nombre), `Listo: ${nombre} ya sale en "¿Qué empleada eres?" en los celulares de las sucursales.`)
+      : nuevo.rol === 'sucursal'
+        ? intentar(
+          () => crearCuenta({ nombre, usuario, contrasena: nuevo.contrasena, rol: 'sucursal' }),
+          `Listo: en el celular se entra con el usuario "${usuario}" y la contraseña que pusiste.`,
+        )
+        : intentar(
+          () => crearCuenta({ nombre, correo: nuevo.correo.trim().toLowerCase(), rol: nuevo.rol }),
+          `Se creó la cuenta ${nombre}. Al correo ${nuevo.correo.trim()} llegará un enlace para poner la contraseña.`,
+        ))
     setOcupado(false)
     setNuevo(null)
   }
   return (
-    <Tarjeta titulo="Cuentas" accion={<button className="btn btn-primario btn-chico" onClick={() => setNuevo({ nombre: '', correo: '', rol: 'empleada' })}>+ Nueva cuenta</button>}>
-      <p className="ayuda">No hay registro público: solo aquí se crean las cuentas. Cada empleada debe tener la suya para que el reporte del bono sea confiable.</p>
+    <Tarjeta titulo="Usuarios" accion={<button className="btn btn-primario btn-chico" onClick={() => setNuevo({ nombre: '', correo: '', usuario: '', contrasena: '', rol: 'empleada' })}>+ Agregar</button>}>
+      <p className="ayuda">
+        Cada sucursal entra con <strong>una sola cuenta</strong> desde su celular (el que tiene WhatsApp Business), con un usuario y contraseña que pones tú. Al entrar, la empleada elige la sucursal y luego toca su nombre en «¿Qué empleada eres?».
+        Las empleadas no necesitan correo ni contraseña: solo se agregan con su nombre.
+      </p>
       <div className="tabla-envoltura">
         <table className="tabla">
-          <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th /></tr></thead>
+          <thead><tr><th>Nombre</th><th>Correo o usuario</th><th>Rol</th><th>Estado</th><th /></tr></thead>
           <tbody>
             {usuarios.map((u) => (
               <tr key={u.id} className={u.activa ? '' : 'cancelada'}>
                 <td>{u.nombre}</td>
-                <td>{u.correo}</td>
-                <td>{u.rol === 'admin' ? 'Administrador' : 'Empleada'}</td>
+                <td>{usuarioDeCorreo(u.correo) ? <>Usuario: <strong>{usuarioDeCorreo(u.correo)}</strong></> : u.correo ?? <span className="ayuda">Sin cuenta</span>}</td>
+                <td>{ROLES[u.rol] ?? u.rol}</td>
                 <td>{u.activa ? 'Activa' : 'Desactivada'}</td>
                 <td className="acciones-fila">
-                  <button className="enlace" onClick={() => restablecer(u)}>Restablecer contraseña</button>
-                  {u.rol !== 'admin' && <button className="enlace" onClick={() => alternar(u)}>{u.activa ? 'Desactivar' : 'Activar'}</button>}
+                  {u.rol === 'sucursal'
+                    ? <button className="enlace" onClick={() => setContrasena({ u, valor: '' })}>Cambiar contraseña</button>
+                    : u.correo && <button className="enlace" onClick={() => restablecer(u)}>Restablecer contraseña</button>}
+                  {puedeAlternar(u) && <button className="enlace" onClick={() => alternar(u)}>{u.activa ? 'Desactivar' : 'Activar'}</button>}
+                  {puedeBorrar(u) && <button className="enlace peligro" onClick={() => setBorrar(u)}>Borrar</button>}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <Modal abierto={!!nuevo} titulo="Nueva cuenta" onCerrar={() => setNuevo(null)}>
+      <Modal abierto={!!nuevo} titulo="Agregar" onCerrar={() => setNuevo(null)}>
         {nuevo && (
           <form className="formulario" onSubmit={crear}>
-            <label>Nombre<input required value={nuevo.nombre} onChange={(e) => setNuevo({ ...nuevo, nombre: e.target.value })} /></label>
-            <label>Correo<input type="email" required value={nuevo.correo} onChange={(e) => setNuevo({ ...nuevo, correo: e.target.value })} /></label>
             <label>
-              Rol
+              Tipo
               <select value={nuevo.rol} onChange={(e) => setNuevo({ ...nuevo, rol: e.target.value })}>
-                <option value="empleada">Empleada</option>
+                <option value="empleada">Empleada (solo su nombre)</option>
+                <option value="sucursal">Celular de sucursal (cuenta compartida)</option>
                 <option value="admin">Administrador</option>
               </select>
             </label>
-            <button className="btn btn-primario btn-bloque" disabled={ocupado}>Crear cuenta</button>
+            <label>
+              Nombre
+              <input required placeholder={nuevo.rol === 'sucursal' ? 'Ej. Celular Allende' : ''} value={nuevo.nombre} onChange={(e) => setNuevo({ ...nuevo, nombre: e.target.value })} />
+            </label>
+            {nuevo.rol === 'empleada' && (
+              <p className="ayuda">No necesita correo ni contraseña. Va a salir en «¿Qué empleada eres?» al entrar en el celular de cualquier sucursal.</p>
+            )}
+            {nuevo.rol === 'sucursal' && (
+              <>
+                <label>
+                  Usuario
+                  <input required pattern="[a-zA-Z0-9._\-]{3,30}" title="De 3 a 30 letras o números, sin espacios ni acentos" autoCapitalize="none" autoCorrect="off" spellCheck={false} placeholder="Ej. allende" value={nuevo.usuario} onChange={(e) => setNuevo({ ...nuevo, usuario: e.target.value })} />
+                </label>
+                <label>
+                  Contraseña
+                  <input type="text" required minLength={6} autoComplete="new-password" value={nuevo.contrasena} onChange={(e) => setNuevo({ ...nuevo, contrasena: e.target.value })} />
+                  <small className="ayuda">Mínimo 6 caracteres. Anótala: con este usuario y contraseña se entra en el celular. Si se olvida, aquí le pones otra.</small>
+                </label>
+              </>
+            )}
+            {nuevo.rol === 'admin' && (
+              <label>
+                Correo
+                <input type="email" required value={nuevo.correo} onChange={(e) => setNuevo({ ...nuevo, correo: e.target.value })} />
+                <small className="ayuda">Le llega un correo para poner su contraseña.</small>
+              </label>
+            )}
+            <button className="btn btn-primario btn-bloque" disabled={ocupado}>{nuevo.rol === 'empleada' ? 'Agregar empleada' : 'Crear cuenta'}</button>
+          </form>
+        )}
+      </Modal>
+      <Modal abierto={!!borrar} titulo="Borrar" onCerrar={() => setBorrar(null)}>
+        {borrar && (
+          <div className="formulario">
+            <p>¿Borrar a <strong>{borrar.nombre}</strong>? No tiene ventas ni registros, así que no se pierde ningún historial. Esto no se puede deshacer.</p>
+            <button className="btn btn-primario btn-bloque" disabled={ocupado} onClick={confirmarBorrar}>{ocupado ? 'Borrando…' : 'Sí, borrar'}</button>
+            <button className="enlace" onClick={() => setBorrar(null)}>Cancelar</button>
+          </div>
+        )}
+      </Modal>
+      <Modal abierto={!!contrasena} titulo="Cambiar contraseña" onCerrar={() => setContrasena(null)}>
+        {contrasena && (
+          <form className="formulario" onSubmit={guardarContrasena}>
+            <p className="ayuda">{contrasena.u.nombre} · usuario <strong>{usuarioDeCorreo(contrasena.u.correo)}</strong></p>
+            <label>
+              Contraseña nueva
+              <input type="text" required minLength={6} autoComplete="new-password" value={contrasena.valor} onChange={(e) => setContrasena({ ...contrasena, valor: e.target.value })} />
+            </label>
+            <button className="btn btn-primario btn-bloque" disabled={ocupado}>Guardar contraseña</button>
           </form>
         )}
       </Modal>
@@ -184,8 +285,10 @@ function Importar() {
 }
 
 function Respaldo() {
-  const { compras, clientes, canjes } = useDatos()
+  const { compras, clientes, canjes, usuarios } = useDatos()
   const cli = (id) => clientes.find((c) => c.id === id)
+  const nombreCompleto = (id) => { const c = cli(id); return c ? `${c.nombre} ${c.apellidos}`.trim() : '' }
+  const empleada = (id) => usuarios.find((u) => u.id === id)?.nombre ?? id
   return (
     <Tarjeta titulo="Copia de respaldo">
       <p className="ayuda">Descarga todo el historial en Excel de vez en cuando como copia de seguridad.</p>
@@ -195,13 +298,13 @@ function Respaldo() {
           { titulo: 'Teléfono', valor: (c) => c.telefono }, { titulo: 'Cumpleaños', valor: (c) => c.cumpleanos }, { titulo: 'Registro', valor: (c) => c.registro }, { titulo: 'Notas', valor: (c) => c.notas },
         ]} />
         <BotonExportar nombre="respaldo-compras" filas={compras} columnas={[
-          { titulo: 'Fecha', valor: (v) => v.fecha }, { titulo: 'Cliente', valor: (v) => v.clienteId }, { titulo: 'Nombre', valor: (v) => cli(v.clienteId).nombre },
+          { titulo: 'Fecha', valor: (v) => v.fecha }, { titulo: 'Cliente', valor: (v) => v.clienteId }, { titulo: 'Nombre', valor: (v) => nombreCompleto(v.clienteId) },
           { titulo: 'Sucursal', valor: (v) => v.sucursal }, { titulo: 'Ticket', valor: (v) => v.ticket }, { titulo: 'Total', valor: (v) => v.total },
-          { titulo: 'Atendió', valor: (v) => v.empleadaId }, { titulo: 'Cuenta que registró', valor: (v) => v.registroId ?? v.empleadaId }, { titulo: 'Cancelada', valor: (v) => (v.cancelada ? 'Sí' : 'No') },
+          { titulo: 'Atendió', valor: (v) => empleada(v.empleadaId) }, { titulo: 'Cuenta que registró', valor: (v) => empleada(v.registroId ?? v.empleadaId) }, { titulo: 'Cancelada', valor: (v) => (v.cancelada ? 'Sí' : 'No') },
         ]} />
         <BotonExportar nombre="respaldo-canjes" filas={canjes} columnas={[
-          { titulo: 'Fecha', valor: (v) => v.fecha }, { titulo: 'Cliente', valor: (v) => v.clienteId }, { titulo: 'Sucursal', valor: (v) => v.sucursal },
-          { titulo: 'Puntos', valor: (v) => v.puntos }, { titulo: 'Descuento', valor: (v) => v.pesos },
+          { titulo: 'Fecha', valor: (v) => v.fecha }, { titulo: 'Cliente', valor: (v) => v.clienteId }, { titulo: 'Nombre', valor: (v) => nombreCompleto(v.clienteId) },
+          { titulo: 'Sucursal', valor: (v) => v.sucursal }, { titulo: 'Puntos', valor: (v) => v.puntos }, { titulo: 'Descuento', valor: (v) => v.pesos },
         ]} />
       </div>
     </Tarjeta>

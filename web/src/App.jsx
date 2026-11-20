@@ -8,6 +8,7 @@ import ClienteFicha from './pages/ClienteFicha'
 import ClienteNuevo from './pages/ClienteNuevo'
 import Contrasena from './pages/Contrasena'
 import Clientes from './pages/Clientes'
+import ElegirEmpleada from './pages/ElegirEmpleada'
 import ElegirSucursal from './pages/ElegirSucursal'
 import Empleadas from './pages/Empleadas'
 import InicioAdmin from './pages/InicioAdmin'
@@ -19,9 +20,10 @@ import TarjetaCliente from './pages/Tarjeta'
 import Ventas from './pages/Ventas'
 
 function Protegida({ children, admin }) {
-  const { usuario, sucursal, esAdmin } = useSesion()
+  const { usuario, sucursal, esAdmin, esCelular, empleada } = useSesion()
   if (!usuario) return <Navigate to="/login" replace />
   if (!sucursal) return <Navigate to="/sucursal" replace />
+  if (esCelular && !empleada) return <Navigate to="/empleada" replace />
   if (admin && !esAdmin) return <Navigate to="/" replace />
   return children
 }
@@ -55,6 +57,7 @@ export default function App() {
     <Routes>
       <Route path="/login" element={usuario ? <Navigate to="/" replace /> : <Login />} />
       <Route path="/sucursal" element={usuario ? <ElegirSucursal /> : <Navigate to="/login" replace />} />
+      <Route path="/empleada" element={!usuario ? <Navigate to="/login" replace /> : <ElegirEmpleada />} />
       <Route path="/tarjeta/:token" element={<TarjetaCliente />} />
       <Route path="/contrasena" element={<Contrasena />} />
       <Route element={<Protegida><Layout /></Protegida>}>

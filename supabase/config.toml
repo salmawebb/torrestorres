@@ -1,2 +1,12 @@
 # Configuración mínima para la CLI de Supabase (supabase link / db push).
 project_id = "torrestorres"
+
+# Correos de cuenta en español con la marca de la joyería.
+# En el proyecto real se pegan a mano en Authentication > Emails (ver supabase/templates/LEEME.md).
+[auth.email.template.invite]
+subject = "Tu cuenta en Joyería Torres Torres"
+content_path = "./supabase/templates/invitacion.html"
+
+[auth.email.template.recovery]
+subject = "Cambia tu contraseña · Joyería Torres Torres"
+content_path = "./supabase/templates/restablecer.html"
