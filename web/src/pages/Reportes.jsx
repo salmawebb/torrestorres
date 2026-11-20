@@ -22,7 +22,7 @@ export default function Reportes() {
       <h1 className="titulo">Reportes</h1>
 
       <Tarjeta
-        titulo="Ranking semanal para el bono"
+        titulo="Ranking semanal de ventas"
         accion={
           <BotonExportar
             nombre={`ranking-${desde.toISOString().slice(0, 10)}`}
