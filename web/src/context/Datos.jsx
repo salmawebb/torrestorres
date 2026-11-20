@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import * as api from '../lib/api'
 import { crearDatosIniciales, nuevoToken, SUCURSALES } from '../data/mock'
+import { correoDeUsuario } from '../lib/formato'
 import { REGLAS_INICIALES, resumenCliente } from '../lib/lealtad'
 import { modoDemo } from '../lib/supabase'
 import { useSesion } from './Sesion'
@@ -63,8 +64,13 @@ function DatosDemo({ children }) {
           clientes: d.clientes.map((c) => (c.id === clienteId ? { ...c, token: nuevoToken() } : c)),
         }))
       },
-      crearCuenta(cuenta) {
+      crearCuenta({ nombre, correo, usuario, rol }) {
+        const cuenta = { nombre, rol, correo: rol === 'sucursal' ? correoDeUsuario(usuario) : correo }
         setDatos((d) => ({ ...d, usuarios: [...d.usuarios, { ...cuenta, id: `u${Date.now()}`, activa: true }] }))
+      },
+      cambiarContrasenaSucursal() {},
+      crearEmpleada(nombre) {
+        setDatos((d) => ({ ...d, usuarios: [...d.usuarios, { id: `u${Date.now()}`, nombre, correo: null, rol: 'empleada', activa: true }] }))
       },
       cambiarActiva(id, activa) {
         setDatos((d) => ({ ...d, usuarios: d.usuarios.map((u) => (u.id === id ? { ...u, activa } : u)) }))
@@ -161,6 +167,11 @@ function DatosSupabase({ children }) {
       },
       async crearCuenta(cuenta) {
         await api.crearCuenta(cuenta)
+        setCat(await api.cargarCatalogos())
+      },
+      cambiarContrasenaSucursal: api.cambiarContrasenaSucursal,
+      async crearEmpleada(nombre) {
+        await api.crearEmpleada(nombre)
         setCat(await api.cargarCatalogos())
       },
       async cambiarActiva(id, activa) {

@@ -55,3 +55,14 @@ export function tokenDeQR(texto) {
   const enlace = t.match(/\/tarjeta\/([^/?#\s]+)/)
   return decodeURIComponent(enlace ? enlace[1] : t)
 }
+
+// Celular de sucursal: entra con usuario (sin correo). Por dentro se guarda
+// como usuario@DOMINIO_SUCURSAL, un correo que nunca recibe nada. Igual que en
+// supabase/functions/crear-cuenta.
+export const DOMINIO_SUCURSAL = 'sucursal.torrestorres.invalid'
+export const correoDeUsuario = (texto) => {
+  const t = texto.trim().toLowerCase()
+  return t.includes('@') ? t : `${t}@${DOMINIO_SUCURSAL}`
+}
+export const usuarioDeCorreo = (correo) =>
+  correo?.endsWith(`@${DOMINIO_SUCURSAL}`) ? correo.slice(0, -DOMINIO_SUCURSAL.length - 1) : null

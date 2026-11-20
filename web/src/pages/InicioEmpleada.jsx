@@ -7,9 +7,9 @@ import { useSesion } from '../context/Sesion'
 import { hora, inicioDeSemana, inicioDelDia } from '../lib/formato'
 
 export default function InicioEmpleada() {
-  const { usuario } = useSesion()
+  const { quien } = useSesion()
   const { compras, clientes } = useDatos()
-  const mias = compras.filter((c) => c.empleadaId === usuario.id && !c.cancelada)
+  const mias = compras.filter((c) => c.empleadaId === quien.id && !c.cancelada)
   const hoy = mias.filter((c) => c.fecha >= inicioDelDia()).sort((a, b) => b.fecha - a.fecha)
   const semana = mias.filter((c) => c.fecha >= inicioDeSemana())
   const cliente = (id) => clientes.find((c) => c.id === id)

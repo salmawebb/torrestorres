@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { Aviso, BotonExportar, Modal, Tarjeta, useAviso } from '../components/Comunes'
 import { useDatos } from '../context/Datos'
 import { useSesion } from '../context/Sesion'
-import { pesos } from '../lib/formato'
+import { pesos, usuarioDeCorreo } from '../lib/formato'
 
 const PESTANAS = [
   { id: 'usuarios', texto: 'Usuarios' },
@@ -33,8 +33,15 @@ export default function Administracion() {
   )
 }
 
+const ROLES = {
+  empleada: 'Empleada',
+  sucursal: 'Celular de sucursal',
+  admin: 'Administrador',
+}
+
 function Usuarios({ setAviso }) {
-  const { usuarios, crearCuenta, cambiarActiva, enviarRecuperacion } = useDatos()
+  const { usuarios, crearCuenta, crearEmpleada, cambiarActiva, enviarRecuperacion, cambiarContrasenaSucursal } = useDatos()
+  const [contrasena, setContrasena] = useState(null)
   const { usuario: yo } = useSesion()
   const adminsActivas = usuarios.filter((u) => u.rol === 'admin' && u.activa).length
   // Nadie se desactiva a sí misma y siempre queda una administradora activa
@@ -50,33 +57,59 @@ function Usuarios({ setAviso }) {
       setAviso(`No se pudo completar: ${e.message}`)
     }
   }
-  const alternar = (u) => intentar(() => cambiarActiva(u.id, !u.activa), u.activa ? `${u.nombre} ya no puede entrar.` : `${u.nombre} puede entrar de nuevo.`)
+  const alternar = (u) => intentar(
+    () => cambiarActiva(u.id, !u.activa),
+    u.rol === 'empleada'
+      ? (u.activa ? `${u.nombre} ya no sale en la lista de empleadas.` : `${u.nombre} vuelve a salir en la lista de empleadas.`)
+      : (u.activa ? `${u.nombre} ya no puede entrar.` : `${u.nombre} puede entrar de nuevo.`),
+  )
   const restablecer = (u) => intentar(() => enviarRecuperacion(u.correo), `Se envió a ${u.correo} un enlace para restablecer la contraseña.`)
+  const guardarContrasena = async (e) => {
+    e.preventDefault()
+    setOcupado(true)
+    await intentar(() => cambiarContrasenaSucursal(contrasena.u.id, contrasena.valor), `Listo, ${contrasena.u.nombre} ya entra con la contraseña nueva.`)
+    setOcupado(false)
+    setContrasena(null)
+  }
   const crear = async (e) => {
     e.preventDefault()
     setOcupado(true)
-    await intentar(
-      () => crearCuenta({ nombre: nuevo.nombre.trim(), correo: nuevo.correo.trim().toLowerCase(), rol: nuevo.rol }),
-      `Se creó la cuenta de ${nuevo.nombre}. Le llegará un correo para poner su contraseña.`,
-    )
+    const nombre = nuevo.nombre.trim()
+    const usuario = nuevo.usuario.trim().toLowerCase()
+    await (nuevo.rol === 'empleada'
+      ? intentar(() => crearEmpleada(nombre), `Listo: ${nombre} ya sale en "¿Qué empleada eres?" en los celulares de las sucursales.`)
+      : nuevo.rol === 'sucursal'
+        ? intentar(
+          () => crearCuenta({ nombre, usuario, contrasena: nuevo.contrasena, rol: 'sucursal' }),
+          `Listo: en el celular se entra con el usuario "${usuario}" y la contraseña que pusiste.`,
+        )
+        : intentar(
+          () => crearCuenta({ nombre, correo: nuevo.correo.trim().toLowerCase(), rol: nuevo.rol }),
+          `Se creó la cuenta ${nombre}. Al correo ${nuevo.correo.trim()} llegará un enlace para poner la contraseña.`,
+        ))
     setOcupado(false)
     setNuevo(null)
   }
   return (
-    <Tarjeta titulo="Cuentas" accion={<button className="btn btn-primario btn-chico" onClick={() => setNuevo({ nombre: '', correo: '', rol: 'empleada' })}>+ Nueva cuenta</button>}>
-      <p className="ayuda">No hay registro público: solo aquí se crean las cuentas. Cada empleada debe tener la suya.</p>
+    <Tarjeta titulo="Usuarios" accion={<button className="btn btn-primario btn-chico" onClick={() => setNuevo({ nombre: '', correo: '', usuario: '', contrasena: '', rol: 'empleada' })}>+ Agregar</button>}>
+      <p className="ayuda">
+        Cada sucursal entra con <strong>una sola cuenta</strong> desde su celular (el que tiene WhatsApp Business), con un usuario y contraseña que pones tú. Al entrar, la empleada elige la sucursal y luego toca su nombre en «¿Qué empleada eres?».
+        Las empleadas no necesitan correo ni contraseña: solo se agregan con su nombre.
+      </p>
       <div className="tabla-envoltura">
         <table className="tabla">
-          <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th /></tr></thead>
+          <thead><tr><th>Nombre</th><th>Correo o usuario</th><th>Rol</th><th>Estado</th><th /></tr></thead>
           <tbody>
             {usuarios.map((u) => (
               <tr key={u.id} className={u.activa ? '' : 'cancelada'}>
                 <td>{u.nombre}</td>
-                <td>{u.correo}</td>
-                <td>{u.rol === 'admin' ? 'Administrador' : 'Empleada'}</td>
+                <td>{usuarioDeCorreo(u.correo) ? <>Usuario: <strong>{usuarioDeCorreo(u.correo)}</strong></> : u.correo ?? <span className="ayuda">Sin cuenta</span>}</td>
+                <td>{ROLES[u.rol] ?? u.rol}</td>
                 <td>{u.activa ? 'Activa' : 'Desactivada'}</td>
                 <td className="acciones-fila">
-                  <button className="enlace" onClick={() => restablecer(u)}>Restablecer contraseña</button>
+                  {u.rol === 'sucursal'
+                    ? <button className="enlace" onClick={() => setContrasena({ u, valor: '' })}>Cambiar contraseña</button>
+                    : u.correo && <button className="enlace" onClick={() => restablecer(u)}>Restablecer contraseña</button>}
                   {puedeAlternar(u) && <button className="enlace" onClick={() => alternar(u)}>{u.activa ? 'Desactivar' : 'Activar'}</button>}
                 </td>
               </tr>
@@ -84,19 +117,57 @@ function Usuarios({ setAviso }) {
           </tbody>
         </table>
       </div>
-      <Modal abierto={!!nuevo} titulo="Nueva cuenta" onCerrar={() => setNuevo(null)}>
+      <Modal abierto={!!nuevo} titulo="Agregar" onCerrar={() => setNuevo(null)}>
         {nuevo && (
           <form className="formulario" onSubmit={crear}>
-            <label>Nombre<input required value={nuevo.nombre} onChange={(e) => setNuevo({ ...nuevo, nombre: e.target.value })} /></label>
-            <label>Correo<input type="email" required value={nuevo.correo} onChange={(e) => setNuevo({ ...nuevo, correo: e.target.value })} /></label>
             <label>
-              Rol
+              Tipo
               <select value={nuevo.rol} onChange={(e) => setNuevo({ ...nuevo, rol: e.target.value })}>
-                <option value="empleada">Empleada</option>
+                <option value="empleada">Empleada (solo su nombre)</option>
+                <option value="sucursal">Celular de sucursal (cuenta compartida)</option>
                 <option value="admin">Administrador</option>
               </select>
             </label>
-            <button className="btn btn-primario btn-bloque" disabled={ocupado}>Crear cuenta</button>
+            <label>
+              Nombre
+              <input required placeholder={nuevo.rol === 'sucursal' ? 'Ej. Celular Allende' : ''} value={nuevo.nombre} onChange={(e) => setNuevo({ ...nuevo, nombre: e.target.value })} />
+            </label>
+            {nuevo.rol === 'empleada' && (
+              <p className="ayuda">No necesita correo ni contraseña. Va a salir en «¿Qué empleada eres?» al entrar en el celular de cualquier sucursal.</p>
+            )}
+            {nuevo.rol === 'sucursal' && (
+              <>
+                <label>
+                  Usuario
+                  <input required pattern="[a-zA-Z0-9._\-]{3,30}" title="De 3 a 30 letras o números, sin espacios ni acentos" autoCapitalize="none" autoCorrect="off" spellCheck={false} placeholder="Ej. allende" value={nuevo.usuario} onChange={(e) => setNuevo({ ...nuevo, usuario: e.target.value })} />
+                </label>
+                <label>
+                  Contraseña
+                  <input type="text" required minLength={6} autoComplete="new-password" value={nuevo.contrasena} onChange={(e) => setNuevo({ ...nuevo, contrasena: e.target.value })} />
+                  <small className="ayuda">Mínimo 6 caracteres. Anótala: con este usuario y contraseña se entra en el celular. Si se olvida, aquí le pones otra.</small>
+                </label>
+              </>
+            )}
+            {nuevo.rol === 'admin' && (
+              <label>
+                Correo
+                <input type="email" required value={nuevo.correo} onChange={(e) => setNuevo({ ...nuevo, correo: e.target.value })} />
+                <small className="ayuda">Le llega un correo para poner su contraseña.</small>
+              </label>
+            )}
+            <button className="btn btn-primario btn-bloque" disabled={ocupado}>{nuevo.rol === 'empleada' ? 'Agregar empleada' : 'Crear cuenta'}</button>
+          </form>
+        )}
+      </Modal>
+      <Modal abierto={!!contrasena} titulo="Cambiar contraseña" onCerrar={() => setContrasena(null)}>
+        {contrasena && (
+          <form className="formulario" onSubmit={guardarContrasena}>
+            <p className="ayuda">{contrasena.u.nombre} · usuario <strong>{usuarioDeCorreo(contrasena.u.correo)}</strong></p>
+            <label>
+              Contraseña nueva
+              <input type="text" required minLength={6} autoComplete="new-password" value={contrasena.valor} onChange={(e) => setContrasena({ ...contrasena, valor: e.target.value })} />
+            </label>
+            <button className="btn btn-primario btn-bloque" disabled={ocupado}>Guardar contraseña</button>
           </form>
         )}
       </Modal>

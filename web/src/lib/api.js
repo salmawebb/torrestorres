@@ -190,14 +190,28 @@ export async function cambiarActiva(id, activa) {
 
 // Crear cuentas necesita la llave de servicio, así que lo hace la función
 // crear-cuenta de Supabase (supabase/functions/crear-cuenta).
-export async function crearCuenta({ nombre, correo, rol }) {
-  const { error } = await supabase.functions.invoke('crear-cuenta', {
-    body: { nombre, correo, rol, redirigir: urlPagina('contrasena') },
-  })
+async function llamarCrearCuenta(body, falla) {
+  const { error } = await supabase.functions.invoke('crear-cuenta', { body })
   if (error) {
     const detalle = await error.context?.json?.().catch(() => null)
-    throw new Error(detalle?.error ?? 'No se pudo crear la cuenta.')
+    throw new Error(detalle?.error ?? falla)
   }
+}
+
+// Administrador: { nombre, correo, rol: 'admin' }, le llega una invitación.
+// Celular de sucursal: { nombre, usuario, contrasena, rol: 'sucursal' }, sin correo.
+export async function crearCuenta(cuenta) {
+  await llamarCrearCuenta({ ...cuenta, redirigir: urlPagina('contrasena') }, 'No se pudo crear la cuenta.')
+}
+
+export async function cambiarContrasenaSucursal(id, contrasena) {
+  await llamarCrearCuenta({ accion: 'contrasena', id, contrasena }, 'No se pudo cambiar la contraseña.')
+}
+
+// Las empleadas no tienen cuenta: son solo su nombre. Entran desde el celular
+// de la sucursal y eligen "¿Qué empleada eres?".
+export async function crearEmpleada(nombre) {
+  fallo(await supabase.from('perfiles').insert({ nombre, rol: 'empleada' }))
 }
 
 export async function enviarRecuperacion(correo) {
