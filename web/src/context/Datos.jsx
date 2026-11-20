@@ -78,6 +78,7 @@ function DatosDemo({ children }) {
         setDatos((d) => ({ ...d, usuarios: [...d.usuarios, { ...cuenta, id: `u${Date.now()}`, activa: true }] }))
       },
       cambiarContrasenaSucursal() {},
+      quitarDosPasos() {},
       borrarCuenta(id) {
         setDatos((d) => ({ ...d, usuarios: d.usuarios.filter((u) => u.id !== id) }))
       },
@@ -196,6 +197,7 @@ function DatosSupabase({ children }) {
         setCat(await api.cargarCatalogos())
       },
       cambiarContrasenaSucursal: api.cambiarContrasenaSucursal,
+      quitarDosPasos: api.quitarDosPasos,
       async borrarCuenta(id) {
         await api.borrarCuenta(id)
         setCat(await api.cargarCatalogos())

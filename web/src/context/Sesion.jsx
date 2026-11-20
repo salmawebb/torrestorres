@@ -25,6 +25,13 @@ const guardar = (s) => {
   }
 }
 
+// Verificación en dos pasos (solo administradoras): además de la contraseña,
+// el código de 6 números de su app autenticadora. `dosPasos` es null cuando
+// ya no falta nada; { tipo: 'activar' } la primera vez (escanea el QR) y
+// { tipo: 'codigo' } en cada entrada. Mientras falte, `usuario` es null y la
+// base de datos no le deja ver nada (migración dos_pasos_admin).
+const EMISOR = 'Joyería Torres Torres'
+
 // Lo que comparten la sesión demo y la real.
 const extras = (usuario, empleada) => ({
   esAdmin: usuario?.rol === 'admin',
@@ -42,7 +49,8 @@ function SesionDemo({ children }) {
     setSesion(s)
     guardar(s)
   }
-  const { usuario = null, sucursal = null, empleada = null } = sesion
+  const { cuenta = null, sucursal = null, empleada = null, dosPasos = null } = sesion
+  const usuario = dosPasos ? null : cuenta
 
   const valor = {
     usuario,
@@ -50,7 +58,24 @@ function SesionDemo({ children }) {
     empleada,
     ...extras(usuario, empleada),
     cargando: false,
-    iniciar: (u) => cambiar({ usuario: u }),
+    // En la demo cualquier código de 6 números sirve.
+    dosPasos,
+    cuentaPendiente: dosPasos ? cuenta : null,
+    async prepararDosPasos() {
+      const secreto = 'DEMO' + 'ABCDEFGHJKLMNPQR'.split('').sort(() => Math.random() - 0.5).join('').slice(0, 12)
+      return { uri: `otpauth://totp/${encodeURIComponent(EMISOR)}:${encodeURIComponent(cuenta?.correo ?? '')}?secret=${secreto}&issuer=${encodeURIComponent(EMISOR)}`, secreto }
+    },
+    async verificarCodigo(codigo) {
+      if (!/^\d{6}$/.test(codigo)) return 'El código no es correcto o ya cambió. Escribe el que se ve ahora en la app.'
+      try { localStorage.setItem('demoDosPasos', '1') } catch { /* sin almacenamiento */ }
+      cambiar({ ...sesion, dosPasos: null })
+      return null
+    },
+    iniciar: (u) => {
+      let activada = false
+      try { activada = localStorage.getItem('demoDosPasos') === '1' } catch { /* sin almacenamiento */ }
+      cambiar({ cuenta: u, dosPasos: u?.rol === 'admin' ? { tipo: activada ? 'codigo' : 'activar' } : null })
+    },
     entrar: async () => 'El correo, el usuario o la contraseña no son correctos.',
     elegirSucursal: (s) => cambiar({ ...sesion, sucursal: s }),
     elegirEmpleada: (e) => cambiar({ ...sesion, empleada: e && { id: e.id, nombre: e.nombre } }),
@@ -60,8 +85,10 @@ function SesionDemo({ children }) {
 }
 
 function SesionSupabase({ children }) {
-  const [usuario, setUsuario] = useState(null)
+  const [cuenta, setCuenta] = useState(null)
+  const [dosPasos, setDosPasos] = useState(null)
   const [cargando, setCargando] = useState(true)
+  const usuario = dosPasos ? null : cuenta
   const [sucursal, setSucursal] = useState(() => leer().sucursal ?? null)
   const [empleada, setEmpleada] = useState(() => leer().empleada ?? null)
 
@@ -69,7 +96,8 @@ function SesionSupabase({ children }) {
     const { data } = supabase.auth.onAuthStateChange((_evento, sesion) => {
       const id = sesion?.user?.id
       if (!id) {
-        setUsuario(null)
+        setCuenta(null)
+        setDosPasos(null)
         setCargando(false)
         return
       }
@@ -78,9 +106,11 @@ function SesionSupabase({ children }) {
         const { data: perfil } = await supabase.from('perfiles').select('id, nombre, correo, rol, activa').eq('id', id).maybeSingle()
         if (!perfil?.activa) {
           await supabase.auth.signOut()
-          setUsuario(null)
+          setCuenta(null)
+          setDosPasos(null)
         } else {
-          setUsuario(perfil)
+          setDosPasos(perfil.rol === 'admin' ? await faltaDosPasos() : null)
+          setCuenta(perfil)
         }
         setCargando(false)
       }, 0)
@@ -109,6 +139,26 @@ function SesionSupabase({ children }) {
     empleada,
     ...extras(usuario, empleada),
     cargando,
+    dosPasos,
+    cuentaPendiente: dosPasos ? cuenta : null,
+    // Primera vez: da de alta la app autenticadora y regresa lo que va en el QR.
+    async prepararDosPasos() {
+      // Un intento anterior que no se terminó estorbaría al crear uno nuevo.
+      const { data: antes } = await supabase.auth.mfa.listFactors()
+      for (const f of antes?.all ?? []) {
+        if (f.factor_type === 'totp' && f.status !== 'verified') await supabase.auth.mfa.unenroll({ factorId: f.id })
+      }
+      const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp', issuer: EMISOR, friendlyName: 'App autenticadora' })
+      if (error) throw new Error(error.message)
+      setDosPasos({ tipo: 'activar', factorId: data.id })
+      return { uri: data.totp.uri, secreto: data.totp.secret, factorId: data.id }
+    },
+    async verificarCodigo(codigo, factorId = dosPasos?.factorId) {
+      const { error } = await supabase.auth.mfa.challengeAndVerify({ factorId, code: codigo })
+      if (error) return 'El código no es correcto o ya cambió. Escribe el que se ve ahora en la app.'
+      // Supabase avisa el cambio de sesión y se vuelve a revisar el perfil.
+      return null
+    },
     async entrar(correo, contrasena) {
       const { data, error } = await supabase.auth.signInWithPassword({ email: correo, password: contrasena })
       if (error) return 'El correo, el usuario o la contraseña no son correctos.'
@@ -125,6 +175,15 @@ function SesionSupabase({ children }) {
     },
   }
   return <SesionContext.Provider value={valor}>{children}</SesionContext.Provider>
+}
+
+// Qué le falta a una administradora con solo la contraseña.
+async function faltaDosPasos() {
+  const { data: nivel } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+  if (nivel?.currentLevel === 'aal2') return null
+  const { data } = await supabase.auth.mfa.listFactors()
+  const activa = data?.totp?.find((f) => f.status === 'verified')
+  return activa ? { tipo: 'codigo', factorId: activa.id } : { tipo: 'activar' }
 }
 
 // eslint-disable-next-line react-refresh/only-export-components

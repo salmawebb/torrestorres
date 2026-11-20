@@ -26,12 +26,13 @@ exception when others then
 end;
 $$;
 
--- Entra como una persona (o sin sesión con null).
-create function pruebas.como(p_correo text) returns void
+-- Entra como una persona (o sin sesión con null). Por defecto con la
+-- verificación en dos pasos hecha (aal2); con p_aal = 'aal1', solo contraseña.
+create function pruebas.como(p_correo text, p_aal text default 'aal2') returns void
 language plpgsql security definer as $$
 begin
   perform set_config('request.jwt.claims',
-    coalesce(json_build_object('sub', (select id from auth.users where email = p_correo))::text, '{}'), false);
+    coalesce(json_build_object('sub', (select id from auth.users where email = p_correo), 'aal', p_aal)::text, '{}'), false);
 end;
 $$;
 grant execute on all functions in schema pruebas to anon, authenticated;
@@ -348,6 +349,24 @@ select pruebas.verifica((select siguiente_nivel = 'Diamante' and falta_para_sigu
 select pruebas.verifica((select numero = 1001
   from tarjeta_publica((select token_tarjeta from token_maria))), 'la tarjeta pública muestra el número de cliente');
 select pruebas.verifica((select count(*) from tarjeta_publica(gen_random_uuid())) = 0, 'un código inventado no muestra nada');
+reset role;
+
+-- Verificación en dos pasos: una administradora con solo la contraseña (aal1)
+-- no ve ni cambia nada; el resto del personal no la necesita.
+set role authenticated;
+select pruebas.como('admin@torrestorres.mx', 'aal1');
+select pruebas.verifica(not es_admin(), 'administradora sin el código no es administradora');
+select pruebas.verifica(not es_personal(), 'administradora sin el código tampoco cuenta como personal');
+select pruebas.verifica((select count(*) from clientes) = 0, 'administradora sin el código no ve clientes');
+select pruebas.verifica((select count(*) from compras) = 0, 'administradora sin el código no ve compras');
+select pruebas.verifica((select count(*) from perfiles) = 1, 'administradora sin el código solo ve su propio perfil');
+select pruebas.debe_fallar('select * from estado_cliente(1001)', 'administradora sin el código no consulta estado_cliente');
+update configuracion set valor_punto = 99;
+select pruebas.verifica((select count(*) from configuracion) = 0, 'administradora sin el código no cambia la configuración');
+select pruebas.como('admin@torrestorres.mx');
+select pruebas.verifica(es_admin() and (select valor_punto <> 99 from configuracion), 'con el código vuelve a ser administradora y nada cambió');
+select pruebas.como('lupita@torrestorres.mx', 'aal1');
+select pruebas.verifica(es_personal() and (select count(*) from clientes) > 0, 'el resto del personal entra sin código');
 reset role;
 
 \echo 'Todas las pruebas pasaron.'

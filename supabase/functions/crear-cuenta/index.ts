@@ -4,6 +4,9 @@
 //   Con { accion: 'contrasena', id, contrasena } el administrador se la cambia.
 // - Con { accion: 'borrar', id } borra una cuenta o empleada que no tenga
 //   ventas, canjes, regalos ni clientes a su nombre (las que sí, solo se desactivan).
+// - Con { accion: 'quitar-dos-pasos', id } le quita la verificación en dos pasos a
+//   otra administradora (por ejemplo, si perdió su celular). Al volver a entrar
+//   la activa de nuevo con un QR.
 // Necesita la llave de servicio, por eso no se hace desde la página.
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
@@ -62,6 +65,21 @@ Deno.serve(async (req) => {
       : await admin.from('perfiles').delete().eq('id', id)
     if (error) return responder({ error: error.message }, 400)
     return responder({ id })
+  }
+
+  if (cuerpo.accion === 'quitar-dos-pasos') {
+    const id = String(cuerpo.id ?? '')
+    const { data: yo } = await quien.auth.getUser()
+    if (yo?.user?.id === id) return responder({ error: 'Pídele a otra administradora que te la quite.' }, 400)
+    const { data: perfil } = await admin.from('perfiles').select('rol').eq('id', id).maybeSingle()
+    if (perfil?.rol !== 'admin') return responder({ error: 'Solo las administradoras tienen verificación en dos pasos.' }, 400)
+    const { data: lista, error: errorLista } = await admin.auth.admin.mfa.listFactors({ userId: id })
+    if (errorLista) return responder({ error: errorLista.message }, 400)
+    for (const f of lista?.factors ?? []) {
+      const { error } = await admin.auth.admin.mfa.deleteFactor({ userId: id, id: f.id })
+      if (error) return responder({ error: error.message }, 400)
+    }
+    return responder({ id, quitadas: lista?.factors?.length ?? 0 })
   }
 
   if (cuerpo.accion === 'contrasena') {

@@ -40,7 +40,8 @@ const ROLES = {
 }
 
 function Usuarios({ setAviso }) {
-  const { usuarios, compras, canjes, clientes, crearCuenta, crearEmpleada, cambiarActiva, enviarRecuperacion, cambiarContrasenaSucursal, borrarCuenta } = useDatos()
+  const { usuarios, compras, canjes, clientes, crearCuenta, crearEmpleada, cambiarActiva, enviarRecuperacion, cambiarContrasenaSucursal, borrarCuenta, quitarDosPasos } = useDatos()
+  const [quitar, setQuitar] = useState(null)
   const [contrasena, setContrasena] = useState(null)
   const [borrar, setBorrar] = useState(null)
   const { usuario: yo } = useSesion()
@@ -60,6 +61,12 @@ function Usuarios({ setAviso }) {
     await intentar(() => borrarCuenta(borrar.id), `Se borró ${borrar.nombre}.`)
     setOcupado(false)
     setBorrar(null)
+  }
+  const confirmarQuitar = async () => {
+    setOcupado(true)
+    await intentar(() => quitarDosPasos(quitar.id), `Listo. La próxima vez que ${quitar.nombre} entre, activa la verificación con un QR nuevo.`)
+    setOcupado(false)
+    setQuitar(null)
   }
   const [nuevo, setNuevo] = useState(null)
   const [ocupado, setOcupado] = useState(false)
@@ -108,7 +115,7 @@ function Usuarios({ setAviso }) {
     <Tarjeta titulo="Usuarios" accion={<button className="btn btn-primario btn-chico" onClick={() => setNuevo({ nombre: '', correo: '', usuario: '', contrasena: '', rol: 'empleada' })}>+ Agregar</button>}>
       <p className="ayuda">
         Cada sucursal entra con <strong>una sola cuenta</strong> desde su celular (el que tiene WhatsApp Business), con un usuario y contraseña que pones tú. Al entrar, la empleada elige la sucursal y luego toca su nombre en «¿Qué empleada eres?».
-        Las empleadas no necesitan correo ni contraseña: solo se agregan con su nombre.
+        Las empleadas no necesitan correo ni contraseña: solo se agregan con su nombre. Las administradoras entran con su contraseña y además el código de su app autenticadora (verificación en dos pasos).
       </p>
       <div className="tabla-envoltura">
         <table className="tabla">
@@ -124,6 +131,7 @@ function Usuarios({ setAviso }) {
                   {u.rol === 'sucursal'
                     ? <button className="enlace" onClick={() => setContrasena({ u, valor: '' })}>Cambiar contraseña</button>
                     : u.correo && <button className="enlace" onClick={() => restablecer(u)}>Restablecer contraseña</button>}
+                  {u.rol === 'admin' && u.id !== yo?.id && <button className="enlace" onClick={() => setQuitar(u)}>Quitar verificación en dos pasos</button>}
                   {puedeAlternar(u) && <button className="enlace" onClick={() => alternar(u)}>{u.activa ? 'Desactivar' : 'Activar'}</button>}
                   {puedeBorrar(u) && <button className="enlace peligro" onClick={() => setBorrar(u)}>Borrar</button>}
                 </td>
@@ -180,6 +188,16 @@ function Usuarios({ setAviso }) {
             <p>¿Borrar a <strong>{borrar.nombre}</strong>? No tiene ventas ni registros, así que no se pierde ningún historial. Esto no se puede deshacer.</p>
             <button className="btn btn-primario btn-bloque" disabled={ocupado} onClick={confirmarBorrar}>{ocupado ? 'Borrando…' : 'Sí, borrar'}</button>
             <button className="enlace" onClick={() => setBorrar(null)}>Cancelar</button>
+          </div>
+        )}
+      </Modal>
+      <Modal abierto={!!quitar} titulo="Quitar verificación en dos pasos" onCerrar={() => setQuitar(null)}>
+        {quitar && (
+          <div className="formulario">
+            <p>Úsalo si <strong>{quitar.nombre}</strong> perdió o cambió su celular. Al volver a entrar le va a salir un QR nuevo para activarla otra vez en su app autenticadora.</p>
+            <p className="ayuda">Si le robaron el celular, mejor desactiva también su cuenta mientras tanto.</p>
+            <button className="btn btn-primario btn-bloque" disabled={ocupado} onClick={confirmarQuitar}>{ocupado ? 'Quitando…' : 'Sí, quitarla'}</button>
+            <button className="enlace" onClick={() => setQuitar(null)}>Cancelar</button>
           </div>
         )}
       </Modal>
