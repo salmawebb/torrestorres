@@ -103,7 +103,12 @@ export function crearDatosIniciales() {
     { id: 'c2', clienteId: clientes[9].id, fecha: haceDias(12), sucursal: 'Allende', puntos: 240, pesos: 60, empleadaId: 'u3' },
   ]
 
-  return { clientes, compras, canjes, usuarios: USUARIOS }
+  // Un regalo de cumpleaños ya usado este año.
+  const regalos = []
+  const conRegalo = clientes.find((c, i) => i > 0 && i % 6 === 0 && Number(c.cumpleanos.split('/')[1]) === hoy.getMonth() + 1)
+  if (conRegalo) regalos.push({ id: 'g1', clienteId: conRegalo.id, fecha: haceDias(0, 11), sucursal: 'Allende', pesos: 100, nivel: 'Plata', empleadaId: 'u3', registroId: 'u6' })
+
+  return { clientes, compras, canjes, regalos, usuarios: USUARIOS }
 }
 
 export { token as nuevoToken }

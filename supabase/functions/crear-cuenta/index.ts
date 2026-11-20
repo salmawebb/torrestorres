@@ -3,7 +3,7 @@
 // - Celular de sucursal: usuario y contraseña que pone el administrador (sin correo).
 //   Con { accion: 'contrasena', id, contrasena } el administrador se la cambia.
 // - Con { accion: 'borrar', id } borra una cuenta o empleada que no tenga
-//   ventas, canjes ni clientes a su nombre (las que sí, solo se desactivan).
+//   ventas, canjes, regalos ni clientes a su nombre (las que sí, solo se desactivan).
 // Necesita la llave de servicio, por eso no se hace desde la página.
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
@@ -48,10 +48,11 @@ Deno.serve(async (req) => {
       admin.from('compras').select('id', { count: 'exact', head: true }).or(`registrada_por.eq.${id},atendida_por.eq.${id},cancelada_por.eq.${id}`),
       admin.from('canjes').select('id', { count: 'exact', head: true }).eq('registrado_por', id),
       admin.from('clientes').select('id', { count: 'exact', head: true }).eq('registrado_por', id),
+      admin.from('regalos_cumple').select('id', { count: 'exact', head: true }).or(`entregado_por.eq.${id},registrado_por.eq.${id}`),
     ])
     if (usos.some((u) => u.error)) return responder({ error: 'No se pudo revisar el historial de la cuenta.' }, 500)
     if (usos.some((u) => u.count)) {
-      return responder({ error: 'Tiene ventas, canjes o clientes a su nombre. Para conservar el historial solo se puede desactivar.' }, 400)
+      return responder({ error: 'Tiene ventas, canjes, regalos o clientes a su nombre. Para conservar el historial solo se puede desactivar.' }, 400)
     }
     // Con cuenta (admin o celular) se borra el login y un trigger borra el
     // perfil; una empleada sin cuenta es solo su perfil.

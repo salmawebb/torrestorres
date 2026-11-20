@@ -6,13 +6,15 @@ import BotonImagenTarjeta from '../components/ImagenTarjeta'
 import { useDatos } from '../context/Datos'
 import { useSesion } from '../context/Sesion'
 import { fecha, pesos, telefono } from '../lib/formato'
-import { enlaceTarjeta, enlaceWhatsApp, mensajeEstadoTarjeta } from '../lib/lealtad'
+import { enlaceTarjeta, enlaceWhatsApp, mensajeEstadoTarjeta, regaloCumple } from '../lib/lealtad'
 
 export default function ClienteFicha() {
   const { id } = useParams()
-  const { clientes, compras, canjes, resumenes, reglas, usuarios, agregarCanje, regenerarToken, cancelarCompra, actualizarCliente } = useDatos()
-  const { usuario, sucursal, esAdmin } = useSesion()
+  const { clientes, compras, canjes, regalos, resumenes, reglas, usuarios, agregarCanje, agregarRegalo, borrarRegalo, regenerarToken, cancelarCompra, actualizarCliente } = useDatos()
+  const { usuario, quien, sucursal, esAdmin } = useSesion()
   const [canjeando, setCanjeando] = useState(false)
+  const [dandoRegalo, setDandoRegalo] = useState(false)
+  const [quitandoRegalo, setQuitandoRegalo] = useState(null)
   const [regenerando, setRegenerando] = useState(false)
   const [cancelando, setCancelando] = useState(null)
   const [editando, setEditando] = useState(false)
@@ -34,6 +36,8 @@ export default function ClienteFicha() {
   const r = resumenes[c.id]
   const susCompras = compras.filter((v) => v.clienteId === c.id).sort((a, b) => b.fecha - a.fecha)
   const susCanjes = canjes.filter((v) => v.clienteId === c.id).sort((a, b) => b.fecha - a.fecha)
+  const susRegalos = regalos.filter((v) => v.clienteId === c.id).sort((a, b) => b.fecha - a.fecha)
+  const regalo = regaloCumple(c, r, reglas, regalos)
   const nombreEmpleada = (uid) => usuarios.find((u) => u.id === uid)?.nombre.split(' ')[0] ?? '—'
   const whatsapp = enlaceWhatsApp(
     c.telefono,
@@ -72,6 +76,19 @@ export default function ClienteFicha() {
           <p className="estado-pendiente">{reglas.minimoCanje <= 1 ? 'Todavía no tiene puntos para canjear.' : `Le faltan ${reglas.minimoCanje - r.puntos} puntos para poder canjear.`}</p>
         )}
 
+        {regalo.enSuMes && (
+          regalo.usado ? (
+            <p className="regalo-cumple usado">🎁 Ya usó su regalo de cumpleaños de {regalo.usado.fecha.getFullYear()}: {pesos(regalo.usado.pesos)} el {fecha(regalo.usado.fecha)} en {regalo.usado.sucursal} (atendió {nombreEmpleada(regalo.usado.empleadaId)}).</p>
+          ) : regalo.monto > 0 ? (
+            <div className="regalo-cumple">
+              <p>🎂 <strong>¡Es su mes de cumpleaños!</strong> Tiene {pesos(regalo.monto)} de regalo por su nivel {r.nivel}.</p>
+              <button className="btn btn-primario" onClick={() => setDandoRegalo(true)}>Canjear regalo de cumpleaños</button>
+            </div>
+          ) : (
+            <p className="regalo-cumple usado">🎂 Es su mes de cumpleaños. Su nivel {r.nivel} no incluye regalo.</p>
+          )
+        )}
+
         <div className="ficha-acciones">
           <Link to={`/clientes/${c.id}/compra`} className="btn btn-primario">Registrar compra</Link>
           <button className="btn btn-secundario" disabled={!r.puedeCanjear} onClick={() => setCanjeando(true)}>Canjear puntos</button>
@@ -93,6 +110,9 @@ export default function ClienteFicha() {
       <div className="pestanas" role="tablist">
         <button role="tab" aria-selected={pestana === 'compras'} onClick={() => setPestana('compras')}>Compras ({susCompras.length})</button>
         <button role="tab" aria-selected={pestana === 'canjes'} onClick={() => setPestana('canjes')}>Canjes ({susCanjes.length})</button>
+        {susRegalos.length > 0 && (
+          <button role="tab" aria-selected={pestana === 'regalos'} onClick={() => setPestana('regalos')}>Regalos ({susRegalos.length})</button>
+        )}
       </div>
 
       {pestana === 'compras' ? (
@@ -123,6 +143,19 @@ export default function ClienteFicha() {
           ) : (
             <Vacio>Sin compras registradas.</Vacio>
           )}
+        </Tarjeta>
+      ) : pestana === 'regalos' ? (
+        <Tarjeta>
+          <ul className="lista-simple">
+            {susRegalos.map((v) => (
+              <li key={v.id}>
+                <span className="lista-hora">{fecha(v.fecha)}</span>
+                <span>🎁 Cumpleaños {v.fecha.getFullYear()} · {v.sucursal} · atendió {nombreEmpleada(v.empleadaId)}</span>
+                <span className="lista-monto">−{pesos(v.pesos)}</span>
+                {esAdmin && <button className="enlace peligro" onClick={() => setQuitandoRegalo(v)}>Quitar</button>}
+              </li>
+            ))}
+          </ul>
         </Tarjeta>
       ) : (
         <Tarjeta>
@@ -155,6 +188,37 @@ export default function ClienteFicha() {
           )
         }}
       />
+
+      {dandoRegalo && (
+        <ModalRegalo
+          monto={regalo.monto}
+          nivel={r.nivel}
+          quien={quien}
+          usuarios={usuarios}
+          sucursal={sucursal}
+          onCerrar={() => setDandoRegalo(false)}
+          onConfirmar={(empleadaId) => {
+            setDandoRegalo(false)
+            intentar(
+              () => agregarRegalo({ clienteId: c.id, fecha: new Date(), sucursal, pesos: regalo.monto, nivel: r.nivel, empleadaId, registroId: usuario.id }),
+              `Regalo de cumpleaños registrado: ${pesos(regalo.monto)} de descuento.`,
+            )
+          }}
+        />
+      )}
+
+      <Modal abierto={!!quitandoRegalo} titulo="Quitar regalo de cumpleaños" onCerrar={() => setQuitandoRegalo(null)}>
+        {quitandoRegalo && (
+          <>
+            <p>Regalo de {pesos(quitandoRegalo.pesos)} del {fecha(quitandoRegalo.fecha)} en {quitandoRegalo.sucursal}.</p>
+            <p className="ayuda">Solo si se registró por error. La clienta podrá volver a usar su regalo de este año.</p>
+            <div className="modal-acciones">
+              <button className="btn btn-secundario" onClick={() => setQuitandoRegalo(null)}>No quitar</button>
+              <button className="btn btn-peligro" onClick={() => { const id = quitandoRegalo.id; setQuitandoRegalo(null); setPestana('compras'); intentar(() => borrarRegalo(id), 'Regalo quitado.') }}>Quitar regalo</button>
+            </div>
+          </>
+        )}
+      </Modal>
 
       <Modal abierto={regenerando} titulo="Generar QR nuevo" onCerrar={() => setRegenerando(false)}>
         <p>El QR que tiene el cliente dejará de funcionar al instante. Úsalo si perdió su celular o compartió su tarjeta por error. Después mándale la tarjeta nueva por WhatsApp.</p>
@@ -240,6 +304,30 @@ function ModalCanje({ abierto, disponibles, reglas, onCerrar, onCanjear }) {
         <p className="resaltado">Descuento: <strong>{pesos(Math.max(puntos, 0) * reglas.valorPunto)}</strong></p>
         {!valido && <p className="error">Debe ser entre {reglas.minimoCanje} y {disponibles} puntos.</p>}
         <button className="btn btn-primario btn-bloque" disabled={!valido}>Confirmar canje</button>
+      </form>
+    </Modal>
+  )
+}
+
+function ModalRegalo({ monto, nivel, quien, usuarios, sucursal, onCerrar, onConfirmar }) {
+  // Igual que al registrar una venta: sale quien eligió al entrar y se puede cambiar.
+  const personal = usuarios.filter((u) => u.activa && (u.rol === 'empleada' || u.id === quien.id))
+  const [atiende, setAtiende] = useState(quien.id)
+  return (
+    <Modal abierto titulo="Canjear regalo de cumpleaños" onCerrar={onCerrar}>
+      <form className="formulario" onSubmit={(e) => { e.preventDefault(); if (atiende) onConfirmar(atiende) }}>
+        <p className="resaltado">Regalo de su nivel {nivel}: <strong>{pesos(monto)}</strong> de descuento</p>
+        <label>
+          ¿Quién atiende?
+          <select required value={atiende} onChange={(e) => setAtiende(e.target.value)}>
+            <option value="" disabled>Elige a la empleada</option>
+            {personal.map((u) => (
+              <option key={u.id} value={u.id}>{u.nombre}</option>
+            ))}
+          </select>
+        </label>
+        <p className="ayuda">Sucursal {sucursal}. Se usa una sola vez este año y no descuenta sus puntos.</p>
+        <button className="btn btn-primario btn-bloque" disabled={!atiende}>Confirmar regalo</button>
       </form>
     </Modal>
   )
