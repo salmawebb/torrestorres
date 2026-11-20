@@ -2,6 +2,8 @@
 // - Administrador: le manda la invitación por correo para que ponga su contraseña.
 // - Celular de sucursal: usuario y contraseña que pone el administrador (sin correo).
 //   Con { accion: 'contrasena', id, contrasena } el administrador se la cambia.
+// - Con { accion: 'borrar', id } borra una cuenta o empleada que no tenga
+//   ventas, canjes ni clientes a su nombre (las que sí, solo se desactivan).
 // Necesita la llave de servicio, por eso no se hace desde la página.
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
@@ -33,6 +35,36 @@ Deno.serve(async (req) => {
   // Celular de sucursal: usuario + contraseña que pone el administrador, sin
   // correo. Por dentro Supabase necesita un correo, así que se arma uno que
   // nunca recibe nada (dominio .invalid, reservado para eso).
+  if (cuerpo.accion === 'borrar') {
+    const id = cuerpo.id
+    const { data: yo } = await quien.auth.getUser()
+    if (!id || yo?.user?.id === id) return responder({ error: 'No puedes borrar tu propia cuenta.' }, 400)
+    const { data: perfil } = await admin.from('perfiles').select('rol, activa').eq('id', id).maybeSingle()
+    if (!perfil) return responder({ error: 'No existe esa cuenta.' }, 404)
+    if (perfil.rol === 'admin' && perfil.activa) {
+      const { count } = await admin.from('perfiles').select('id', { count: 'exact', head: true })
+        .eq('rol', 'admin').eq('activa', true).neq('id', id)
+      if (!count) return responder({ error: 'Debe quedar al menos una administradora activa.' }, 400)
+    }
+    const usos = await Promise.all([
+      admin.from('compras').select('id', { count: 'exact', head: true }).or(`registrada_por.eq.${id},atendida_por.eq.${id},cancelada_por.eq.${id}`),
+      admin.from('canjes').select('id', { count: 'exact', head: true }).eq('registrado_por', id),
+      admin.from('clientes').select('id', { count: 'exact', head: true }).eq('registrado_por', id),
+    ])
+    if (usos.some((u) => u.error)) return responder({ error: 'No se pudo revisar el historial de la cuenta.' }, 500)
+    if (usos.some((u) => u.count)) {
+      return responder({ error: 'Tiene ventas, canjes o clientes a su nombre. Para conservar el historial solo se puede desactivar.' }, 400)
+    }
+    // Con cuenta (admin o celular) se borra el login y un trigger borra el
+    // perfil; una empleada sin cuenta es solo su perfil.
+    const { data: cuenta, error: sinCuenta } = await admin.auth.admin.getUserById(id)
+    const { error } = !sinCuenta && cuenta?.user
+      ? await admin.auth.admin.deleteUser(id)
+      : await admin.from('perfiles').delete().eq('id', id)
+    if (error) return responder({ error: error.message }, 400)
+    return responder({ id })
+  }
+
   if (cuerpo.accion === 'contrasena') {
     const { id, contrasena } = cuerpo
     if (!id || !contrasena || contrasena.length < 6) return responder({ error: 'La contraseña debe tener al menos 6 caracteres.' }, 400)

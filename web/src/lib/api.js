@@ -204,6 +204,11 @@ export async function crearCuenta(cuenta) {
   await llamarCrearCuenta({ ...cuenta, redirigir: urlPagina('contrasena') }, 'No se pudo crear la cuenta.')
 }
 
+// Solo cuentas sin ventas, canjes ni clientes a su nombre (la función lo revisa).
+export async function borrarCuenta(id) {
+  await llamarCrearCuenta({ accion: 'borrar', id }, 'No se pudo borrar.')
+}
+
 export async function cambiarContrasenaSucursal(id, contrasena) {
   await llamarCrearCuenta({ accion: 'contrasena', id, contrasena }, 'No se pudo cambiar la contraseña.')
 }
