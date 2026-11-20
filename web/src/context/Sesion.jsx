@@ -1,10 +1,10 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { modoDemo, supabase } from '../lib/supabase'
+import { supabase } from '../lib/supabase'
 
 const SesionContext = createContext(null)
 
 // La sucursal y la empleada elegidas se guardan en sessionStorage para que no
-// se pierdan al recargar la página. En modo demo también el usuario.
+// se pierdan al recargar la página.
 //
 // Cada sucursal entra con una cuenta compartida (rol "sucursal") desde su
 // celular, porque ahí vive el WhatsApp Business. Después de la sucursal se
@@ -25,7 +25,6 @@ const guardar = (s) => {
   }
 }
 
-// Lo que comparten la sesión demo y la real.
 const extras = (usuario, empleada) => ({
   esAdmin: usuario?.rol === 'admin',
   esCelular: usuario?.rol === 'sucursal',
@@ -33,30 +32,7 @@ const extras = (usuario, empleada) => ({
 })
 
 export function SesionProvider({ children }) {
-  return modoDemo ? <SesionDemo>{children}</SesionDemo> : <SesionSupabase>{children}</SesionSupabase>
-}
-
-function SesionDemo({ children }) {
-  const [sesion, setSesion] = useState(leer)
-  const cambiar = (s) => {
-    setSesion(s)
-    guardar(s)
-  }
-  const { usuario = null, sucursal = null, empleada = null } = sesion
-
-  const valor = {
-    usuario,
-    sucursal,
-    empleada,
-    ...extras(usuario, empleada),
-    cargando: false,
-    iniciar: (u) => cambiar({ usuario: u }),
-    entrar: async () => 'El correo, el usuario o la contraseña no son correctos.',
-    elegirSucursal: (s) => cambiar({ ...sesion, sucursal: s }),
-    elegirEmpleada: (e) => cambiar({ ...sesion, empleada: e && { id: e.id, nombre: e.nombre } }),
-    salir: () => cambiar({}),
-  }
-  return <SesionContext.Provider value={valor}>{children}</SesionContext.Provider>
+  return <SesionSupabase>{children}</SesionSupabase>
 }
 
 function SesionSupabase({ children }) {

@@ -89,8 +89,6 @@ small { color: var(--tinta-suave); }
 }
 .acceso-caja h1 { font-family: var(--serif); font-size: 30px; }
 .acceso-caja .marca { justify-content: center; }
-.demo { border-top: 1px dashed var(--linea); padding-top: 16px; display: flex; flex-direction: column; gap: 8px; }
-.demo span { font-size: 13px; color: var(--tinta-suave); }
 .lista-sucursales { display: grid; gap: 10px; }
 .btn-sucursal {
   min-height: 64px; border-radius: 12px; border: 1px solid var(--linea); background: var(--campo);

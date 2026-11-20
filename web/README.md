@@ -4,12 +4,8 @@ Sistema de ventas y programa de lealtad, hecho con **React + Vite** y **Supabase
 Sigue el documento *Propuesta: sistema de ventas y lealtad*. La base de datos está en
 [`../supabase`](../supabase/README.md).
 
-Funciona de dos maneras:
-
-- **Con Supabase:** si existe `web/.env.local` con `VITE_SUPABASE_URL` y
-  `VITE_SUPABASE_ANON_KEY` (copia `.env.example`), usa el login y los datos reales.
-- **Modo demo:** sin ese archivo, usa datos de ejemplo en memoria, útil para enseñar
-  la página.
+Necesita `web/.env.local` con `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`
+(copia `.env.example`). Sin ese archivo la página no arranca: ya no hay modo demo.
 
 ## Correr en tu computadora
 
@@ -19,16 +15,14 @@ npm install
 npm run dev
 ```
 
-Abre http://localhost:5173. En modo demo entra con los botones "Entrar como empleada" o
-"Entrar como administrador", o con un correo de ejemplo como `lupita@torrestorres.mx` y
-cualquier contraseña. Con Supabase, entra con una cuenta creada por el administrador.
+Abre http://localhost:5173 y entra con una cuenta creada por el administrador.
 
 ## Publicar en GitHub Pages
 
 Cada cambio en `main` se publica solo en https://salmawebb.github.io/torrestorres/
 (workflow `.github/workflows/pages.yml`). Para que use la base de datos real, agrega en
 GitHub los secretos `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`
-(Settings > Secrets and variables > Actions); sin ellos sale en modo demo.
+(Settings > Secrets and variables > Actions); sin ellos la página no arranca.
 
 ## Pantallas
 
@@ -49,14 +43,13 @@ GitHub los secretos `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`
 
 "Exportar a Excel" (solo administrador) descarga un archivo `.xlsx` con los filtros aplicados; las fechas y los montos quedan como fechas y números de Excel.
 
-"Escanear QR" lee la tarjeta del cliente con la cámara (BarcodeDetector en Chrome de Android, jsQR en Safari y computadoras) y abre su ficha. La cámara necesita HTTPS, que GitHub Pages ya da. El botón "Simular lectura" solo aparece en modo demo.
+"Escanear QR" lee la tarjeta del cliente con la cámara (BarcodeDetector en Chrome de Android, jsQR en Safari y computadoras) y abre su ficha. La cámara necesita HTTPS, que GitHub Pages ya da.
 
 ## Estructura
 
 - `src/lib/lealtad.js`: reglas del programa (puntos por cada $10, niveles de uno en uno, vencimiento a 6 meses, canje desde 200 puntos).
 - `src/lib/supabase.js`, `src/lib/api.js`: conexión y consultas a Supabase.
-- `src/data/mock.js`: datos de ejemplo del modo demo.
-- `src/context/`: datos y sesión (Supabase o demo).
+- `src/context/`: datos y sesión (Supabase).
 - `src/pages/`, `src/components/`: pantallas y piezas reutilizables.
 
 ## Pendiente
