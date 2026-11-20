@@ -8,7 +8,7 @@ import { fecha, hora, pesos } from '../lib/formato'
 
 export default function Ventas() {
   const { compras, clientes, usuarios, resumenes, reglas } = useDatos()
-  const { usuario, esAdmin } = useSesion()
+  const { quien, esAdmin } = useSesion()
   const [sucursal, setSucursal] = useState('Todas')
   const [desde, setDesde] = useState('')
   const [hasta, setHasta] = useState('')
@@ -21,7 +21,7 @@ export default function Ventas() {
   const nivelUsado = (v) => resumenes[v.clienteId].puntosPorCompraId[v.id]?.nivel ?? '—'
 
   const lista = compras
-    .filter((v) => esAdmin || v.empleadaId === usuario.id)
+    .filter((v) => esAdmin || v.empleadaId === quien.id)
     .filter((v) => sucursal === 'Todas' || v.sucursal === sucursal)
     .filter((v) => !desde || v.fecha >= desdeTexto(desde))
     .filter((v) => !hasta || v.fecha <= hastaTexto(hasta))
