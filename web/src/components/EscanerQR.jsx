@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import jsQR from 'jsqr'
 import { Modal } from './Comunes'
 import { useDatos } from '../context/Datos'
-import { modoDemo } from '../lib/supabase'
 import { tokenDeQR } from '../lib/formato'
 
 // Cámara para escanear el QR de la tarjeta del cliente. Lee cuadro por cuadro
@@ -98,11 +97,6 @@ export default function EscanerQR({ abierto, onCerrar, onEncontrado }) {
         <div className="escaner-marco" aria-hidden="true" />
       </div>
       <p className="ayuda" role="status">{aviso || 'Apunta la cámara al código QR de la tarjeta.'}</p>
-      {modoDemo && (
-        <button className="btn btn-secundario btn-bloque" onClick={() => onEncontrado(clientes[0])}>
-          Simular lectura (demo)
-        </button>
-      )}
     </Modal>
   )
 }

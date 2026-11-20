@@ -119,21 +119,21 @@ export default function ClienteFicha() {
         <Tarjeta>
           {susCompras.length ? (
             <div className="tabla-envoltura">
-              <table className="tabla">
+              <table className="tabla tabla-tarjetas">
                 <thead>
                   <tr><th>Fecha</th><th>Sucursal</th><th>Ticket</th><th className="num">Total</th><th className="num">Puntos</th><th>Atendió</th>{esAdmin && <th />}</tr>
                 </thead>
                 <tbody>
                   {susCompras.map((v) => (
                     <tr key={v.id} className={v.cancelada ? 'cancelada' : ''}>
-                      <td>{fecha(v.fecha)}</td>
-                      <td>{v.sucursal}</td>
-                      <td>{v.ticket}</td>
-                      <td className="num">{pesos(v.total)}</td>
-                      <td className="num">{v.cancelada ? 'Cancelada' : `+${r.puntosPorCompraId[v.id]?.puntos ?? 0}`}</td>
-                      <td>{nombreEmpleada(v.empleadaId)}</td>
+                      <td className="t-pri">{fecha(v.fecha)}</td>
+                      <td className="t-meta">{v.sucursal}</td>
+                      <td className="t-meta" data-label="Ticket">{v.ticket}</td>
+                      <td className="num t-der">{pesos(v.total)}</td>
+                      <td className="num t-meta" data-label="Puntos">{v.cancelada ? 'Cancelada' : `+${r.puntosPorCompraId[v.id]?.puntos ?? 0}`}</td>
+                      <td className="t-meta" data-label="Atendió">{nombreEmpleada(v.empleadaId)}</td>
                       {esAdmin && (
-                        <td>{!v.cancelada && <button className="enlace peligro" onClick={() => setCancelando(v)}>Cancelar</button>}</td>
+                        <td className="t-fin">{!v.cancelada && <button className="enlace peligro" onClick={() => setCancelando(v)}>Cancelar</button>}</td>
                       )}
                     </tr>
                   ))}

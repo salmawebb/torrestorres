@@ -8,7 +8,6 @@ import { pesos, usuarioDeCorreo } from '../lib/formato'
 const PESTANAS = [
   { id: 'usuarios', texto: 'Usuarios' },
   { id: 'lealtad', texto: 'Programa de lealtad' },
-  { id: 'importar', texto: 'Importar Excel' },
   { id: 'respaldo', texto: 'Respaldo' },
 ]
 
@@ -26,7 +25,6 @@ export default function Administracion() {
       </div>
       {tab === 'usuarios' && <Usuarios setAviso={setAviso} />}
       {tab === 'lealtad' && <Lealtad setAviso={setAviso} />}
-      {tab === 'importar' && <Importar />}
       {tab === 'respaldo' && <Respaldo />}
       <Aviso mensaje={aviso} onCerrar={cerrarAviso} />
     </div>
@@ -281,25 +279,6 @@ function Lealtad({ setAviso }) {
         <p className="ayuda">Si cambias las reglas, las compras ya registradas conservan los puntos que ganaron. El nivel de cada clienta sí se vuelve a calcular con su historial, así que las dos reglas de nivel pueden cambiar el nivel de quien ya compró.</p>
         <button className="btn btn-primario">Guardar cambios</button>
       </form>
-    </Tarjeta>
-  )
-}
-
-function Importar() {
-  const [archivo, setArchivo] = useState(null)
-  return (
-    <Tarjeta titulo="Importar el Excel actual">
-      <ol className="pasos">
-        <li>Sube el archivo de Excel con las hojas de <strong>clientes</strong> y <strong>compras</strong>.</li>
-        <li>El sistema muestra una vista previa y marca las filas con errores (teléfonos incompletos, tickets repetidos).</li>
-        <li>Los puntos y niveles se recalculan a partir de las compras, en lugar de copiarse tal cual.</li>
-        <li>Confirmas y se cargan los datos.</li>
-      </ol>
-      <label className="zona-archivo">
-        <input type="file" accept=".xlsx,.xls,.csv" onChange={(e) => setArchivo(e.target.files[0] ?? null)} />
-        <span>{archivo ? `📄 ${archivo.name}` : 'Toca para elegir el archivo de Excel'}</span>
-      </label>
-      {archivo && <p className="ayuda">La lectura del archivo se conectará cuando esté lista la base de datos.</p>}
     </Tarjeta>
   )
 }

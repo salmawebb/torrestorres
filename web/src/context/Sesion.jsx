@@ -1,10 +1,10 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { modoDemo, supabase } from '../lib/supabase'
+import { supabase } from '../lib/supabase'
 
 const SesionContext = createContext(null)
 
 // La sucursal y la empleada elegidas se guardan en sessionStorage para que no
-// se pierdan al recargar la página. En modo demo también el usuario.
+// se pierdan al recargar la página.
 //
 // Cada sucursal entra con una cuenta compartida (rol "sucursal") desde su
 // celular, porque ahí vive el WhatsApp Business. Después de la sucursal se
@@ -32,7 +32,6 @@ const guardar = (s) => {
 // base de datos no le deja ver nada (migración dos_pasos_admin).
 const EMISOR = 'Joyería Torres Torres'
 
-// Lo que comparten la sesión demo y la real.
 const extras = (usuario, empleada) => ({
   esAdmin: usuario?.rol === 'admin',
   esCelular: usuario?.rol === 'sucursal',
@@ -40,48 +39,7 @@ const extras = (usuario, empleada) => ({
 })
 
 export function SesionProvider({ children }) {
-  return modoDemo ? <SesionDemo>{children}</SesionDemo> : <SesionSupabase>{children}</SesionSupabase>
-}
-
-function SesionDemo({ children }) {
-  const [sesion, setSesion] = useState(leer)
-  const cambiar = (s) => {
-    setSesion(s)
-    guardar(s)
-  }
-  const { cuenta = null, sucursal = null, empleada = null, dosPasos = null } = sesion
-  const usuario = dosPasos ? null : cuenta
-
-  const valor = {
-    usuario,
-    sucursal,
-    empleada,
-    ...extras(usuario, empleada),
-    cargando: false,
-    // En la demo cualquier código de 6 números sirve.
-    dosPasos,
-    cuentaPendiente: dosPasos ? cuenta : null,
-    async prepararDosPasos() {
-      const secreto = 'DEMO' + 'ABCDEFGHJKLMNPQR'.split('').sort(() => Math.random() - 0.5).join('').slice(0, 12)
-      return { uri: `otpauth://totp/${encodeURIComponent(EMISOR)}:${encodeURIComponent(cuenta?.correo ?? '')}?secret=${secreto}&issuer=${encodeURIComponent(EMISOR)}`, secreto }
-    },
-    async verificarCodigo(codigo) {
-      if (!/^\d{6}$/.test(codigo)) return 'El código no es correcto o ya cambió. Escribe el que se ve ahora en la app.'
-      try { localStorage.setItem('demoDosPasos', '1') } catch { /* sin almacenamiento */ }
-      cambiar({ ...sesion, dosPasos: null })
-      return null
-    },
-    iniciar: (u) => {
-      let activada = false
-      try { activada = localStorage.getItem('demoDosPasos') === '1' } catch { /* sin almacenamiento */ }
-      cambiar({ cuenta: u, dosPasos: u?.rol === 'admin' ? { tipo: activada ? 'codigo' : 'activar' } : null })
-    },
-    entrar: async () => 'El correo, el usuario o la contraseña no son correctos.',
-    elegirSucursal: (s) => cambiar({ ...sesion, sucursal: s }),
-    elegirEmpleada: (e) => cambiar({ ...sesion, empleada: e && { id: e.id, nombre: e.nombre } }),
-    salir: () => cambiar({}),
-  }
-  return <SesionContext.Provider value={valor}>{children}</SesionContext.Provider>
+  return <SesionSupabase>{children}</SesionSupabase>
 }
 
 function SesionSupabase({ children }) {

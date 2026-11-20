@@ -29,12 +29,13 @@ export default function Layout() {
   const [menuAbierto, setMenuAbierto] = useState(false)
   const navigate = useNavigate()
   const opciones = MENU.filter((m) => !m.admin || esAdmin)
+  // En el celular: barra fija abajo con lo que más se usa; lo demás en "Más".
+  const abajo = opciones.filter((m) => ['/', '/clientes', '/canjes'].includes(m.a))
 
   return (
     <div className="app">
       <header className="barra">
-        <button className="btn-icono solo-movil" onClick={() => setMenuAbierto(true)} aria-label="Abrir menú">☰</button>
-        <Marca chica />
+                <Marca chica />
         <div className="barra-derecha">
           <button className="chip-sucursal" onClick={() => navigate('/sucursal')} title="Cambiar sucursal">
             📍 {sucursal}
@@ -71,6 +72,19 @@ export default function Layout() {
           <Outlet />
         </main>
       </div>
+
+      <nav className="barra-abajo solo-movil" aria-label="Menú principal">
+        {abajo.map((m) => (
+          <NavLink key={m.a} to={m.a} end={m.fin}>
+            <span className="menu-icono" aria-hidden="true">{m.icono}</span>
+            {m.a === '/' && !esAdmin ? 'Cobrar' : m.texto}
+          </NavLink>
+        ))}
+        <button onClick={() => setMenuAbierto(true)}>
+          <span className="menu-icono" aria-hidden="true">☰</span>
+          Más
+        </button>
+      </nav>
     </div>
   )
 }

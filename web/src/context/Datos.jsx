@@ -1,15 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import * as api from '../lib/api'
-import { crearDatosIniciales, nuevoToken, SUCURSALES } from '../data/mock'
-import { correoDeUsuario } from '../lib/formato'
 import { REGLAS_INICIALES, resumenCliente } from '../lib/lealtad'
-import { modoDemo } from '../lib/supabase'
 import { useSesion } from './Sesion'
 
 const DatosContext = createContext(null)
 
 export function DatosProvider({ children }) {
-  return modoDemo ? <DatosDemo>{children}</DatosDemo> : <DatosSupabase>{children}</DatosSupabase>
+  return <DatosSupabase>{children}</DatosSupabase>
 }
 
 function useResumenes(clientes, compras, canjes, reglas) {
@@ -27,83 +24,9 @@ function useResumenes(clientes, compras, canjes, reglas) {
   }, [clientes, compras, canjes, reglas])
 }
 
-// Modo demo: almacén en memoria con datos de ejemplo.
-function DatosDemo({ children }) {
-  const [datos, setDatos] = useState(crearDatosIniciales)
-  const [reglas, setReglas] = useState(REGLAS_INICIALES)
-  const resumenes = useResumenes(datos.clientes, datos.compras, datos.canjes, reglas)
-
-  const acciones = useMemo(
-    () => ({
-      agregarCliente(cliente, usuarioId) {
-        const nuevo = {
-          ...cliente,
-          id: Math.max(...datos.clientes.map((c) => c.id)) + 1,
-          registro: new Date(),
-          registradoPor: usuarioId,
-          token: nuevoToken(),
-        }
-        setDatos((d) => ({ ...d, clientes: [...d.clientes, nuevo] }))
-        return nuevo
-      },
-      agregarCompra(compra, registroId) {
-        const nueva = { ...compra, registroId, id: `v${Date.now()}`, cancelada: false }
-        delete nueva.archivo
-        setDatos((d) => ({ ...d, compras: [...d.compras, nueva] }))
-        return nueva
-      },
-      cancelarCompra(id) {
-        setDatos((d) => ({ ...d, compras: d.compras.map((c) => (c.id === id ? { ...c, cancelada: true } : c)) }))
-      },
-      agregarCanje(canje) {
-        setDatos((d) => ({ ...d, canjes: [...d.canjes, { ...canje, id: `c${Date.now()}` }] }))
-      },
-      agregarRegalo(regalo) {
-        setDatos((d) => ({ ...d, regalos: [...d.regalos, { ...regalo, id: `g${Date.now()}` }] }))
-      },
-      borrarRegalo(id) {
-        setDatos((d) => ({ ...d, regalos: d.regalos.filter((g) => g.id !== id) }))
-      },
-      actualizarCliente(id, cambios) {
-        setDatos((d) => ({ ...d, clientes: d.clientes.map((c) => (c.id === id ? { ...c, ...cambios } : c)) }))
-      },
-      regenerarToken(clienteId) {
-        setDatos((d) => ({
-          ...d,
-          clientes: d.clientes.map((c) => (c.id === clienteId ? { ...c, token: nuevoToken() } : c)),
-        }))
-      },
-      crearCuenta({ nombre, correo, usuario, rol }) {
-        const cuenta = { nombre, rol, correo: rol === 'sucursal' ? correoDeUsuario(usuario) : correo }
-        setDatos((d) => ({ ...d, usuarios: [...d.usuarios, { ...cuenta, id: `u${Date.now()}`, activa: true }] }))
-      },
-      cambiarContrasenaSucursal() {},
-      quitarDosPasos() {},
-      borrarCuenta(id) {
-        setDatos((d) => ({ ...d, usuarios: d.usuarios.filter((u) => u.id !== id) }))
-      },
-      crearEmpleada(nombre) {
-        setDatos((d) => ({ ...d, usuarios: [...d.usuarios, { id: `u${Date.now()}`, nombre, correo: null, rol: 'empleada', activa: true }] }))
-      },
-      cambiarActiva(id, activa) {
-        setDatos((d) => ({ ...d, usuarios: d.usuarios.map((u) => (u.id === id ? { ...u, activa } : u)) }))
-      },
-      enviarRecuperacion() {},
-      guardarReglas: setReglas,
-    }),
-    [datos.clientes],
-  )
-
-  const valor = useMemo(
-    () => ({ ...datos, sucursales: SUCURSALES, reglas, resumenes, cargando: false, error: null, ...acciones }),
-    [datos, reglas, resumenes, acciones],
-  )
-  return <DatosContext.Provider value={valor}>{children}</DatosContext.Provider>
-}
-
 const VACIO = { clientes: [], compras: [], canjes: [], regalos: [] }
 
-// Modo real: los datos vienen de Supabase y cada cambio se guarda ahí.
+// Los datos vienen de Supabase y cada cambio se guarda ahí.
 function DatosSupabase({ children }) {
   const { usuario } = useSesion()
   const [cat, setCat] = useState(null)

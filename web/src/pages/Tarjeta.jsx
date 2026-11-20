@@ -3,11 +3,9 @@ import { useParams } from 'react-router-dom'
 import { QRCodeSVG } from 'qrcode.react'
 import BotonImagenTarjeta from '../components/ImagenTarjeta'
 import { Marca } from '../components/Layout'
-import { useDatos } from '../context/Datos'
 import { tarjetaPublica } from '../lib/api'
 import { enlaceTarjeta } from '../lib/lealtad'
 import { fecha, pesos } from '../lib/formato'
-import { modoDemo } from '../lib/supabase'
 
 // Página pública que abre el cliente al escanear su QR. Solo muestra
 // nombre de pila, número de cliente, nivel, puntos y vigencia.
@@ -65,18 +63,9 @@ export default function TarjetaCliente() {
   )
 }
 
-const useTarjeta = modoDemo ? useTarjetaDemo : useTarjetaSupabase
-
-// En modo demo la tarjeta sale de los datos de ejemplo.
-function useTarjetaDemo(token) {
-  const { clientes, resumenes, reglas } = useDatos()
-  const c = clientes.find((x) => x.token === token)
-  return c ? { ...resumenes[c.id], nombre: c.nombre, numero: c.id, minimoCanje: reglas.minimoCanje } : null
-}
-
 // Con Supabase se consulta la función pública: solo nombre de pila, nivel,
 // puntos y vigencia. undefined mientras carga, null si el código no sirve.
-function useTarjetaSupabase(token) {
+function useTarjeta(token) {
   const [tarjeta, setTarjeta] = useState(undefined)
   useEffect(() => {
     tarjetaPublica(token).then(setTarjeta, () => setTarjeta(null))
