@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Aviso, BotonExportar, Modal, Tarjeta, useAviso } from '../components/Comunes'
 import { useDatos } from '../context/Datos'
+import { useSesion } from '../context/Sesion'
 import { pesos } from '../lib/formato'
 
 const PESTANAS = [
@@ -34,6 +35,11 @@ export default function Administracion() {
 
 function Usuarios({ setAviso }) {
   const { usuarios, crearCuenta, cambiarActiva, enviarRecuperacion } = useDatos()
+  const { usuario: yo } = useSesion()
+  const adminsActivas = usuarios.filter((u) => u.rol === 'admin' && u.activa).length
+  // Nadie se desactiva a sí misma y siempre queda una administradora activa
+  // (la base de datos revisa lo mismo).
+  const puedeAlternar = (u) => u.id !== yo?.id && !(u.rol === 'admin' && u.activa && adminsActivas <= 1)
   const [nuevo, setNuevo] = useState(null)
   const [ocupado, setOcupado] = useState(false)
   const intentar = async (accion, mensaje) => {
@@ -71,7 +77,7 @@ function Usuarios({ setAviso }) {
                 <td>{u.activa ? 'Activa' : 'Desactivada'}</td>
                 <td className="acciones-fila">
                   <button className="enlace" onClick={() => restablecer(u)}>Restablecer contraseña</button>
-                  {u.rol !== 'admin' && <button className="enlace" onClick={() => alternar(u)}>{u.activa ? 'Desactivar' : 'Activar'}</button>}
+                  {puedeAlternar(u) && <button className="enlace" onClick={() => alternar(u)}>{u.activa ? 'Desactivar' : 'Activar'}</button>}
                 </td>
               </tr>
             ))}
