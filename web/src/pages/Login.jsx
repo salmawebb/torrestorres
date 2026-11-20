@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Marca } from '../components/Layout'
 import { useDatos } from '../context/Datos'
 import { useSesion } from '../context/Sesion'
+import { correoDeUsuario } from '../lib/formato'
 import { modoDemo } from '../lib/supabase'
 
 export default function Login() {
@@ -24,12 +25,12 @@ export default function Login() {
   const enviar = async (e) => {
     e.preventDefault()
     if (modoDemo) {
-      const u = usuarios.find((x) => x.correo === correo.trim().toLowerCase() && x.activa)
-      if (!u || !contrasena) return setError('Correo o contraseña incorrectos.')
+      const u = usuarios.find((x) => x.correo === correoDeUsuario(correo) && x.activa)
+      if (!u || !contrasena) return setError('El correo, el usuario o la contraseña no son correctos.')
       return entrar(u)
     }
     setOcupado(true)
-    const fallo = await entrarConCorreo(correo.trim().toLowerCase(), contrasena)
+    const fallo = await entrarConCorreo(correoDeUsuario(correo), contrasena)
     setOcupado(false)
     if (fallo) setError(fallo)
     else navigate('/sucursal')
@@ -55,8 +56,8 @@ export default function Login() {
           <form onSubmit={enviar} className="formulario">
             <h1>Iniciar sesión</h1>
             <label>
-              Correo
-              <input type="email" autoComplete="username" value={correo} onChange={(e) => setCorreo(e.target.value)} required />
+              Correo o usuario
+              <input type="text" inputMode="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} autoComplete="username" value={correo} onChange={(e) => setCorreo(e.target.value)} required />
             </label>
             <label>
               Contraseña
@@ -70,7 +71,7 @@ export default function Login() {
           <form className="formulario" onSubmit={recuperarContrasena}>
             <h1>Recuperar contraseña</h1>
             {enviado ? (
-              <p className="ayuda">Si el correo está registrado, te llegará un enlace para crear una contraseña nueva. También puedes pedirle al administrador que la restablezca.</p>
+              <p className="ayuda">Si el correo está registrado, te llegará un enlace para crear una contraseña nueva. También puedes pedirle al administrador que la restablezca. Si es el celular de una sucursal, el administrador le pone una nueva desde Usuarios.</p>
             ) : (
               <label>
                 Correo

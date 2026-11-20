@@ -8,7 +8,7 @@ export const USUARIOS = [
   { id: 'u3', nombre: 'Karla Méndez', correo: null, rol: 'empleada', activa: true },
   { id: 'u4', nombre: 'Daniela Ríos', correo: null, rol: 'empleada', activa: true },
   { id: 'u5', nombre: 'Mónica Salas', correo: null, rol: 'empleada', activa: false },
-  { id: 'u6', nombre: 'Celular Allende', correo: 'allende@torrestorres.mx', rol: 'sucursal', activa: true },
+  { id: 'u6', nombre: 'Celular Allende', correo: 'allende@sucursal.torrestorres.invalid', rol: 'sucursal', activa: true },
 ]
 
 const NOMBRES = [

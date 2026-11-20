@@ -51,7 +51,7 @@ function SesionDemo({ children }) {
     ...extras(usuario, empleada),
     cargando: false,
     iniciar: (u) => cambiar({ usuario: u }),
-    entrar: async () => 'Correo o contraseña incorrectos.',
+    entrar: async () => 'El correo, el usuario o la contraseña no son correctos.',
     elegirSucursal: (s) => cambiar({ ...sesion, sucursal: s }),
     elegirEmpleada: (e) => cambiar({ ...sesion, empleada: e && { id: e.id, nombre: e.nombre } }),
     salir: () => cambiar({}),
@@ -111,7 +111,7 @@ function SesionSupabase({ children }) {
     cargando,
     async entrar(correo, contrasena) {
       const { data, error } = await supabase.auth.signInWithPassword({ email: correo, password: contrasena })
-      if (error) return 'Correo o contraseña incorrectos.'
+      if (error) return 'El correo, el usuario o la contraseña no son correctos.'
       const { data: perfil } = await supabase.from('perfiles').select('activa').eq('id', data.user.id).maybeSingle()
       if (!perfil?.activa) return 'Tu cuenta está desactivada. Habla con el administrador.'
       olvidar()
