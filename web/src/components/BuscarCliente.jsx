@@ -12,7 +12,7 @@ export function filtrarClientes(clientes, texto) {
   return clientes.filter(
     (c) =>
       `${c.nombre} ${c.apellidos}`.toLowerCase().includes(q) ||
-      (digitos.length >= 3 && c.telefono.includes(digitos)) ||
+      (digitos.length >= 3 && c.telefono?.includes(digitos)) ||
       String(c.id) === q,
   )
 }

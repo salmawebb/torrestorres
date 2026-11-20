@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import CamposCliente, { datosCliente, formularioCliente, revisarCliente } from '../components/CamposCliente'
 import { Aviso, Dato, Modal, NivelBadge, Tarjeta, useAviso, Vacio } from '../components/Comunes'
 import BotonImagenTarjeta from '../components/ImagenTarjeta'
 import { useDatos } from '../context/Datos'
@@ -9,11 +10,12 @@ import { enlaceTarjeta, enlaceWhatsApp, mensajeEstadoTarjeta } from '../lib/leal
 
 export default function ClienteFicha() {
   const { id } = useParams()
-  const { clientes, compras, canjes, resumenes, reglas, usuarios, agregarCanje, regenerarToken, cancelarCompra } = useDatos()
+  const { clientes, compras, canjes, resumenes, reglas, usuarios, agregarCanje, regenerarToken, cancelarCompra, actualizarCliente } = useDatos()
   const { usuario, sucursal, esAdmin } = useSesion()
   const [canjeando, setCanjeando] = useState(false)
   const [regenerando, setRegenerando] = useState(false)
   const [cancelando, setCancelando] = useState(null)
+  const [editando, setEditando] = useState(false)
   const [aviso, setAviso, cerrarAviso] = useAviso()
   const [pestana, setPestana] = useState('compras')
 
@@ -49,6 +51,7 @@ export default function ClienteFicha() {
             <p className="ficha-meta">
               #{c.id} · {telefono(c.telefono)} · 🎂 {c.cumpleanos}
             </p>
+            <button className="enlace" onClick={() => setEditando(true)}>Editar datos</button>
           </div>
           <NivelBadge nivel={r.nivel} />
         </div>
@@ -72,7 +75,11 @@ export default function ClienteFicha() {
         <div className="ficha-acciones">
           <Link to={`/clientes/${c.id}/compra`} className="btn btn-primario">Registrar compra</Link>
           <button className="btn btn-secundario" disabled={!r.puedeCanjear} onClick={() => setCanjeando(true)}>Canjear puntos</button>
-          <a className="btn btn-whatsapp" href={whatsapp} target="_blank" rel="noreferrer">Enviar por WhatsApp</a>
+          {c.telefono ? (
+            <a className="btn btn-whatsapp" href={whatsapp} target="_blank" rel="noreferrer">Enviar por WhatsApp</a>
+          ) : (
+            <button className="btn btn-whatsapp" disabled title="No tiene teléfono registrado">Enviar por WhatsApp</button>
+          )}
         </div>
 
         <div className="ficha-tarjeta">
@@ -170,8 +177,52 @@ export default function ClienteFicha() {
         )}
       </Modal>
 
+      {editando && (
+        <ModalEditar
+          cliente={c}
+          clientes={clientes}
+          onCerrar={() => setEditando(false)}
+          onGuardar={async (datos) => {
+            await actualizarCliente(c.id, datos)
+            setEditando(false)
+            setAviso('Datos actualizados.')
+          }}
+        />
+      )}
+
       <Aviso mensaje={aviso} onCerrar={cerrarAviso} />
     </div>
+  )
+}
+
+function ModalEditar({ cliente, clientes, onCerrar, onGuardar }) {
+  const [f, setF] = useState(() => formularioCliente(cliente))
+  const [error, setError] = useState('')
+  const [ocupado, setOcupado] = useState(false)
+  const revision = revisarCliente(f, clientes, cliente.id)
+  const guardar = async (e) => {
+    e.preventDefault()
+    if (!revision.valido || ocupado) return
+    setOcupado(true)
+    setError('')
+    try {
+      await onGuardar(datosCliente(f, revision.tel))
+    } catch (err) {
+      setError(`No se pudo guardar: ${err.message}`)
+      setOcupado(false)
+    }
+  }
+  return (
+    <Modal abierto titulo="Editar datos" onCerrar={onCerrar}>
+      <form className="formulario" onSubmit={guardar}>
+        <CamposCliente f={f} setF={setF} revision={revision} />
+        {error && <p className="error">{error}</p>}
+        <div className="modal-acciones">
+          <button type="button" className="btn btn-secundario" onClick={onCerrar}>Cancelar</button>
+          <button className="btn btn-primario" disabled={!revision.valido || ocupado}>Guardar</button>
+        </div>
+      </form>
+    </Modal>
   )
 }
 

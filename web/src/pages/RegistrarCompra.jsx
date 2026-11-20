@@ -61,6 +61,8 @@ export default function RegistrarCompra() {
       [...compras.filter((v) => v.clienteId === c.id && v.id !== nueva.id), nueva],
       canjes.filter((v) => v.clienteId === c.id),
       reglas,
+      new Date(),
+      c.saldo,
     )
     setGuardada({ compra: nueva, despues, ganados: despues.puntosPorCompraId[nueva.id].puntos })
   }
@@ -80,7 +82,11 @@ export default function RegistrarCompra() {
             <Dato etiqueta="Vigencia" valor={fecha(despues.vigencia)} />
           </div>
           {despues.nivel !== r.nivel && <p className="estado-ok">🎉 ¡Subió a nivel {despues.nivel}!</p>}
-          <a className="btn btn-whatsapp btn-bloque" href={enlaceWhatsApp(c.telefono, texto)} target="_blank" rel="noreferrer">Avisar por WhatsApp</a>
+          {c.telefono ? (
+            <a className="btn btn-whatsapp btn-bloque" href={enlaceWhatsApp(c.telefono, texto)} target="_blank" rel="noreferrer">Avisar por WhatsApp</a>
+          ) : (
+            <p className="ayuda">No tiene teléfono registrado. Puedes agregarlo en su ficha con "Editar datos".</p>
+          )}
           <details className="mensaje-previo">
             <summary>Ver mensaje</summary>
             <p>{texto}</p>

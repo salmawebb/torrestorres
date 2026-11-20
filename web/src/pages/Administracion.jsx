@@ -285,8 +285,10 @@ function Importar() {
 }
 
 function Respaldo() {
-  const { compras, clientes, canjes } = useDatos()
+  const { compras, clientes, canjes, usuarios } = useDatos()
   const cli = (id) => clientes.find((c) => c.id === id)
+  const nombreCompleto = (id) => { const c = cli(id); return c ? `${c.nombre} ${c.apellidos}`.trim() : '' }
+  const empleada = (id) => usuarios.find((u) => u.id === id)?.nombre ?? id
   return (
     <Tarjeta titulo="Copia de respaldo">
       <p className="ayuda">Descarga todo el historial en Excel de vez en cuando como copia de seguridad.</p>
@@ -296,13 +298,13 @@ function Respaldo() {
           { titulo: 'Teléfono', valor: (c) => c.telefono }, { titulo: 'Cumpleaños', valor: (c) => c.cumpleanos }, { titulo: 'Registro', valor: (c) => c.registro }, { titulo: 'Notas', valor: (c) => c.notas },
         ]} />
         <BotonExportar nombre="respaldo-compras" filas={compras} columnas={[
-          { titulo: 'Fecha', valor: (v) => v.fecha }, { titulo: 'Cliente', valor: (v) => v.clienteId }, { titulo: 'Nombre', valor: (v) => cli(v.clienteId).nombre },
+          { titulo: 'Fecha', valor: (v) => v.fecha }, { titulo: 'Cliente', valor: (v) => v.clienteId }, { titulo: 'Nombre', valor: (v) => nombreCompleto(v.clienteId) },
           { titulo: 'Sucursal', valor: (v) => v.sucursal }, { titulo: 'Ticket', valor: (v) => v.ticket }, { titulo: 'Total', valor: (v) => v.total },
-          { titulo: 'Atendió', valor: (v) => v.empleadaId }, { titulo: 'Cuenta que registró', valor: (v) => v.registroId ?? v.empleadaId }, { titulo: 'Cancelada', valor: (v) => (v.cancelada ? 'Sí' : 'No') },
+          { titulo: 'Atendió', valor: (v) => empleada(v.empleadaId) }, { titulo: 'Cuenta que registró', valor: (v) => empleada(v.registroId ?? v.empleadaId) }, { titulo: 'Cancelada', valor: (v) => (v.cancelada ? 'Sí' : 'No') },
         ]} />
         <BotonExportar nombre="respaldo-canjes" filas={canjes} columnas={[
-          { titulo: 'Fecha', valor: (v) => v.fecha }, { titulo: 'Cliente', valor: (v) => v.clienteId }, { titulo: 'Sucursal', valor: (v) => v.sucursal },
-          { titulo: 'Puntos', valor: (v) => v.puntos }, { titulo: 'Descuento', valor: (v) => v.pesos },
+          { titulo: 'Fecha', valor: (v) => v.fecha }, { titulo: 'Cliente', valor: (v) => v.clienteId }, { titulo: 'Nombre', valor: (v) => nombreCompleto(v.clienteId) },
+          { titulo: 'Sucursal', valor: (v) => v.sucursal }, { titulo: 'Puntos', valor: (v) => v.puntos }, { titulo: 'Descuento', valor: (v) => v.pesos },
         ]} />
       </div>
     </Tarjeta>
