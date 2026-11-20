@@ -84,7 +84,7 @@ export default function ClienteFicha() {
 
         <div className="ficha-tarjeta">
           <Link to={`/tarjeta/${c.token}`} target="_blank">Ver tarjeta del cliente ↗</Link>
-          <BotonImagenTarjeta nombre={c.nombre} enlace={enlaceTarjeta(c.token)} className="enlace">Descargar imagen de la tarjeta</BotonImagenTarjeta>
+          <BotonImagenTarjeta nombre={c.nombre} numero={c.id} enlace={enlaceTarjeta(c.token)} className="enlace">Descargar imagen de la tarjeta</BotonImagenTarjeta>
           <button className="enlace" onClick={() => setRegenerando(true)}>Generar QR nuevo</button>
         </div>
         {c.notas && <p className="ficha-notas">📝 {c.notas}</p>}

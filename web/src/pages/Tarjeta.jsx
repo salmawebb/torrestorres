@@ -57,7 +57,7 @@ export default function TarjetaCliente() {
           <small>Muestra este código en tienda</small>
         </div>
       </div>
-      <BotonImagenTarjeta nombre={t.nombre} enlace={enlaceTarjeta(token)} className="tarjeta-guardar">
+      <BotonImagenTarjeta nombre={t.nombre} numero={t.numero} enlace={enlaceTarjeta(token)} className="tarjeta-guardar">
         Guardar mi tarjeta en el celular
       </BotonImagenTarjeta>
       <p className="tarjeta-pie">Joyería Torres Torres · Allende · Olmos · Hidalgo</p>
