@@ -4,11 +4,10 @@ import { Marca } from '../components/Layout'
 import { useDatos } from '../context/Datos'
 import { useSesion } from '../context/Sesion'
 import { correoDeUsuario } from '../lib/formato'
-import { modoDemo } from '../lib/supabase'
 
 export default function Login() {
-  const { usuarios, enviarRecuperacion } = useDatos()
-  const { iniciar, entrar: entrarConCorreo } = useSesion()
+  const { enviarRecuperacion } = useDatos()
+  const { entrar: entrarConCorreo } = useSesion()
   const navigate = useNavigate()
   const [correo, setCorreo] = useState('')
   const [contrasena, setContrasena] = useState('')
@@ -17,18 +16,8 @@ export default function Login() {
   const [enviado, setEnviado] = useState(false)
   const [ocupado, setOcupado] = useState(false)
 
-  const entrar = (u) => {
-    iniciar(u)
-    navigate('/sucursal')
-  }
-
   const enviar = async (e) => {
     e.preventDefault()
-    if (modoDemo) {
-      const u = usuarios.find((x) => x.correo === correoDeUsuario(correo) && x.activa)
-      if (!u || !contrasena) return setError('El correo, el usuario o la contraseña no son correctos.')
-      return entrar(u)
-    }
     setOcupado(true)
     const fallo = await entrarConCorreo(correoDeUsuario(correo), contrasena)
     setOcupado(false)
@@ -81,14 +70,6 @@ export default function Login() {
             {!enviado && <button className="btn btn-primario btn-bloque" type="submit" disabled={ocupado}>Enviar enlace</button>}
             <button type="button" className="enlace" onClick={() => { setRecuperar(false); setEnviado(false) }}>Volver</button>
           </form>
-        )}
-
-        {modoDemo && (
-          <div className="demo">
-            <span>Demo sin datos reales:</span>
-            <button className="btn btn-secundario btn-chico" onClick={() => entrar(usuarios.find((u) => u.rol === 'sucursal'))}>Entrar como celular de sucursal</button>
-            <button className="btn btn-secundario btn-chico" onClick={() => entrar(usuarios[0])}>Entrar como administrador</button>
-          </div>
         )}
       </div>
     </div>
