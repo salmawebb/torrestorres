@@ -58,7 +58,7 @@ function Usuarios({ setAviso }) {
   }
   return (
     <Tarjeta titulo="Cuentas" accion={<button className="btn btn-primario btn-chico" onClick={() => setNuevo({ nombre: '', correo: '', rol: 'empleada' })}>+ Nueva cuenta</button>}>
-      <p className="ayuda">No hay registro público: solo aquí se crean las cuentas. Cada empleada debe tener la suya para que el reporte del bono sea confiable.</p>
+      <p className="ayuda">No hay registro público: solo aquí se crean las cuentas. Cada empleada debe tener la suya.</p>
       <div className="tabla-envoltura">
         <table className="tabla">
           <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th /></tr></thead>
