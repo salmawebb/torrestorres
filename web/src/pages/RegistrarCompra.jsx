@@ -160,7 +160,7 @@ export default function RegistrarCompra() {
             {sube && <small className="estado-ok">Con esta compra sube a {r.siguienteNivel}.</small>}
           </div>
 
-          <button className="btn btn-primario btn-bloque btn-grande" disabled={monto <= 0 || !ticket.trim() || !atiende || duplicado || ocupado}>{ocupado ? 'Guardando…' : 'Guardar venta'}</button>
+          <button className="btn btn-primario btn-bloque btn-grande btn-fijo" disabled={monto <= 0 || !ticket.trim() || !atiende || duplicado || ocupado}>{ocupado ? 'Guardando…' : 'Guardar venta'}</button>
         </form>
       </Tarjeta>
     </div>

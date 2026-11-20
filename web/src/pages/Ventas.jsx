@@ -51,10 +51,10 @@ export default function Ventas() {
         {esAdmin && <BotonExportar nombre="ventas" columnas={columnas} filas={lista} />}
       </div>
 
-      <Filtros>
+      <Filtros plegar>
         <FiltroSucursal valor={sucursal} onChange={setSucursal} />
         <FiltroFechas desde={desde} hasta={hasta} onDesde={setDesde} onHasta={setHasta} />
-        <label>Cliente<input type="search" value={cliente} onChange={(e) => setCliente(e.target.value)} /></label>
+        <label className="filtro-ancho">Cliente<input type="search" value={cliente} onChange={(e) => setCliente(e.target.value)} /></label>
         {esAdmin && (
           <label>
             Empleada
@@ -71,21 +71,21 @@ export default function Ventas() {
         <p className="conteo">{activas.length} ventas · {pesos(activas.reduce((s, v) => s + v.total, 0))}</p>
         {lista.length ? (
           <div className="tabla-envoltura">
-            <table className="tabla">
+            <table className="tabla tabla-tarjetas">
               <thead>
                 <tr><th>Fecha</th><th>Sucursal</th><th>Ticket</th><th>Cliente</th><th className="num">Total</th><th className="num">Puntos</th><th>Nivel</th>{esAdmin && <th>Atendió</th>}</tr>
               </thead>
               <tbody>
                 {lista.map((v) => (
                   <tr key={v.id} className={v.cancelada ? 'cancelada' : ''}>
-                    <td>{fecha(v.fecha)} <small>{hora(v.fecha)}</small></td>
-                    <td>{v.sucursal}</td>
-                    <td>{v.ticket}</td>
-                    <td><Link to={`/clientes/${v.clienteId}`}>{cli(v.clienteId).nombre} {cli(v.clienteId).apellidos.split(' ')[0]}</Link></td>
-                    <td className="num">{pesos(v.total)}</td>
-                    <td className="num">{v.cancelada ? 'Cancelada' : resumenes[v.clienteId].puntosPorCompraId[v.id]?.puntos ?? 0}</td>
-                    <td>{nivelUsado(v) !== '—' ? <NivelBadge nivel={nivelUsado(v)} /> : '—'}</td>
-                    {esAdmin && <td>{nombreEmpleada(v.empleadaId).split(' ')[0]}</td>}
+                    <td className="t-meta">{fecha(v.fecha)} <small>{hora(v.fecha)}</small></td>
+                    <td className="t-meta">{v.sucursal}</td>
+                    <td className="t-meta" data-label="Ticket">{v.ticket}</td>
+                    <td className="t-pri"><Link to={`/clientes/${v.clienteId}`}>{cli(v.clienteId).nombre} {cli(v.clienteId).apellidos.split(' ')[0]}</Link></td>
+                    <td className="num t-der">{pesos(v.total)}</td>
+                    <td className="num t-meta" data-label="Puntos">{v.cancelada ? 'Cancelada' : resumenes[v.clienteId].puntosPorCompraId[v.id]?.puntos ?? 0}</td>
+                    <td className="t-fin">{nivelUsado(v) !== '—' ? <NivelBadge nivel={nivelUsado(v)} /> : '—'}</td>
+                    {esAdmin && <td className="t-meta" data-label="Atendió">{nombreEmpleada(v.empleadaId).split(' ')[0]}</td>}
                   </tr>
                 ))}
               </tbody>
