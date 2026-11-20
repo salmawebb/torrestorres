@@ -37,7 +37,7 @@ GitHub los secretos `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`
 | `/login` | Todos | Correo y contraseña, recuperar contraseña |
 | `/sucursal` | Todos | Elegir Allende, Olmos o Hidalgo al entrar |
 | `/` | Empleada | Cobrar: escanear QR o buscar por teléfono, cliente nuevo, mis ventas de hoy, mi total de la semana, cumpleaños |
-| `/` | Administrador | Ventas de hoy y semana por sucursal, ranking del bono, puntos por vencer, cerca de subir de nivel, pendientes, accesos directos |
+| `/` | Administrador | Ventas de hoy y semana por sucursal, ranking semanal de ventas, puntos por vencer, cerca de subir de nivel, pendientes, accesos directos |
 | `/clientes` | Todos | Lista con búsqueda y filtros (nivel, cumpleaños, sucursal, sin comprar) |
 | `/clientes/:id` | Todos | Ficha: nivel, puntos, vigencia, registrar compra, canjear, WhatsApp, QR nuevo; el admin cancela ventas |
 | `/clientes/:id/compra` | Todos | Total + ticket, aviso de ticket duplicado, puntos que ganará, aviso por WhatsApp |
