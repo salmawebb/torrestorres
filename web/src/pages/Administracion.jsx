@@ -90,7 +90,8 @@ function Usuarios({ setAviso }) {
     setOcupado(true)
     const nombre = nuevo.nombre.trim()
     const usuario = nuevo.usuario.trim().toLowerCase()
-    await (nuevo.rol === 'empleada'
+    const correo = nuevo.correo.trim().toLowerCase()
+    await (nuevo.rol === 'empleada' && !correo
       ? intentar(() => crearEmpleada(nombre), `Listo: ${nombre} ya sale en "¿Qué empleada eres?" en los celulares de las sucursales.`)
       : nuevo.rol === 'sucursal'
         ? intentar(
@@ -98,7 +99,7 @@ function Usuarios({ setAviso }) {
           `Listo: en el celular se entra con el usuario "${usuario}" y la contraseña que pusiste.`,
         )
         : intentar(
-          () => crearCuenta({ nombre, correo: nuevo.correo.trim().toLowerCase(), rol: nuevo.rol }),
+          () => crearCuenta({ nombre, correo, rol: nuevo.rol }),
           `Se creó la cuenta ${nombre}. Al correo ${nuevo.correo.trim()} llegará un enlace para poner la contraseña.`,
         ))
     setOcupado(false)
@@ -108,7 +109,7 @@ function Usuarios({ setAviso }) {
     <Tarjeta titulo="Usuarios" accion={<button className="btn btn-primario btn-chico" onClick={() => setNuevo({ nombre: '', correo: '', usuario: '', contrasena: '', rol: 'empleada' })}>+ Agregar</button>}>
       <p className="ayuda">
         Cada sucursal entra con <strong>una sola cuenta</strong> desde su celular (el que tiene WhatsApp Business), con un usuario y contraseña que pones tú. Al entrar, la empleada elige la sucursal y luego toca su nombre en «¿Qué empleada eres?».
-        Las empleadas no necesitan correo ni contraseña: solo se agregan con su nombre.
+        Las empleadas se pueden agregar solo con su nombre (sin correo ni contraseña) o con correo si quieres que tengan su propia cuenta.
       </p>
       <div className="tabla-envoltura">
         <table className="tabla">
@@ -138,7 +139,7 @@ function Usuarios({ setAviso }) {
             <label>
               Tipo
               <select value={nuevo.rol} onChange={(e) => setNuevo({ ...nuevo, rol: e.target.value })}>
-                <option value="empleada">Empleada (solo su nombre)</option>
+                <option value="empleada">Empleada</option>
                 <option value="sucursal">Celular de sucursal (cuenta compartida)</option>
                 <option value="admin">Administrador</option>
               </select>
@@ -148,7 +149,15 @@ function Usuarios({ setAviso }) {
               <input required placeholder={nuevo.rol === 'sucursal' ? 'Ej. Celular Allende' : ''} value={nuevo.nombre} onChange={(e) => setNuevo({ ...nuevo, nombre: e.target.value })} />
             </label>
             {nuevo.rol === 'empleada' && (
-              <p className="ayuda">No necesita correo ni contraseña. Va a salir en «¿Qué empleada eres?» al entrar en el celular de cualquier sucursal.</p>
+              <label>
+                Correo (opcional)
+                <input type="email" value={nuevo.correo} onChange={(e) => setNuevo({ ...nuevo, correo: e.target.value })} />
+                <small className="ayuda">
+                  {nuevo.correo.trim()
+                    ? 'Le llega un correo para poner su contraseña y puede entrar con su propia cuenta (también sale en «¿Qué empleada eres?»).'
+                    : 'Sin correo no necesita contraseña: elige su nombre en «¿Qué empleada eres?» al entrar en el celular de la sucursal.'}
+                </small>
+              </label>
             )}
             {nuevo.rol === 'sucursal' && (
               <>
@@ -170,7 +179,7 @@ function Usuarios({ setAviso }) {
                 <small className="ayuda">Le llega un correo para poner su contraseña.</small>
               </label>
             )}
-            <button className="btn btn-primario btn-bloque" disabled={ocupado}>{nuevo.rol === 'empleada' ? 'Agregar empleada' : 'Crear cuenta'}</button>
+            <button className="btn btn-primario btn-bloque" disabled={ocupado}>{nuevo.rol === 'empleada' && !nuevo.correo.trim() ? 'Agregar empleada' : 'Crear cuenta'}</button>
           </form>
         )}
       </Modal>
