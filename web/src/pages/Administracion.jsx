@@ -40,13 +40,27 @@ const ROLES = {
 }
 
 function Usuarios({ setAviso }) {
-  const { usuarios, crearCuenta, crearEmpleada, cambiarActiva, enviarRecuperacion, cambiarContrasenaSucursal } = useDatos()
+  const { usuarios, compras, canjes, clientes, crearCuenta, crearEmpleada, cambiarActiva, enviarRecuperacion, cambiarContrasenaSucursal, borrarCuenta } = useDatos()
   const [contrasena, setContrasena] = useState(null)
+  const [borrar, setBorrar] = useState(null)
   const { usuario: yo } = useSesion()
   const adminsActivas = usuarios.filter((u) => u.rol === 'admin' && u.activa).length
   // Nadie se desactiva a sí misma y siempre queda una administradora activa
   // (la base de datos revisa lo mismo).
   const puedeAlternar = (u) => u.id !== yo?.id && !(u.rol === 'admin' && u.activa && adminsActivas <= 1)
+  // Borrar solo lo que no tiene historial (creado por error o mal escrito); lo
+  // demás se desactiva. La función crear-cuenta lo vuelve a revisar.
+  const tieneHistorial = (id) =>
+    compras.some((v) => v.empleadaId === id || v.registroId === id) ||
+    canjes.some((c) => c.empleadaId === id) ||
+    clientes.some((c) => c.registradoPor === id)
+  const puedeBorrar = (u) => puedeAlternar(u) && !tieneHistorial(u.id)
+  const confirmarBorrar = async () => {
+    setOcupado(true)
+    await intentar(() => borrarCuenta(borrar.id), `Se borró ${borrar.nombre}.`)
+    setOcupado(false)
+    setBorrar(null)
+  }
   const [nuevo, setNuevo] = useState(null)
   const [ocupado, setOcupado] = useState(false)
   const intentar = async (accion, mensaje) => {
@@ -111,6 +125,7 @@ function Usuarios({ setAviso }) {
                     ? <button className="enlace" onClick={() => setContrasena({ u, valor: '' })}>Cambiar contraseña</button>
                     : u.correo && <button className="enlace" onClick={() => restablecer(u)}>Restablecer contraseña</button>}
                   {puedeAlternar(u) && <button className="enlace" onClick={() => alternar(u)}>{u.activa ? 'Desactivar' : 'Activar'}</button>}
+                  {puedeBorrar(u) && <button className="enlace peligro" onClick={() => setBorrar(u)}>Borrar</button>}
                 </td>
               </tr>
             ))}
@@ -157,6 +172,15 @@ function Usuarios({ setAviso }) {
             )}
             <button className="btn btn-primario btn-bloque" disabled={ocupado}>{nuevo.rol === 'empleada' ? 'Agregar empleada' : 'Crear cuenta'}</button>
           </form>
+        )}
+      </Modal>
+      <Modal abierto={!!borrar} titulo="Borrar" onCerrar={() => setBorrar(null)}>
+        {borrar && (
+          <div className="formulario">
+            <p>¿Borrar a <strong>{borrar.nombre}</strong>? No tiene ventas ni registros, así que no se pierde ningún historial. Esto no se puede deshacer.</p>
+            <button className="btn btn-primario btn-bloque" disabled={ocupado} onClick={confirmarBorrar}>{ocupado ? 'Borrando…' : 'Sí, borrar'}</button>
+            <button className="enlace" onClick={() => setBorrar(null)}>Cancelar</button>
+          </div>
         )}
       </Modal>
       <Modal abierto={!!contrasena} titulo="Cambiar contraseña" onCerrar={() => setContrasena(null)}>

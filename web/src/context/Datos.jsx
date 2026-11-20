@@ -69,6 +69,9 @@ function DatosDemo({ children }) {
         setDatos((d) => ({ ...d, usuarios: [...d.usuarios, { ...cuenta, id: `u${Date.now()}`, activa: true }] }))
       },
       cambiarContrasenaSucursal() {},
+      borrarCuenta(id) {
+        setDatos((d) => ({ ...d, usuarios: d.usuarios.filter((u) => u.id !== id) }))
+      },
       crearEmpleada(nombre) {
         setDatos((d) => ({ ...d, usuarios: [...d.usuarios, { id: `u${Date.now()}`, nombre, correo: null, rol: 'empleada', activa: true }] }))
       },
@@ -170,6 +173,10 @@ function DatosSupabase({ children }) {
         setCat(await api.cargarCatalogos())
       },
       cambiarContrasenaSucursal: api.cambiarContrasenaSucursal,
+      async borrarCuenta(id) {
+        await api.borrarCuenta(id)
+        setCat(await api.cargarCatalogos())
+      },
       async crearEmpleada(nombre) {
         await api.crearEmpleada(nombre)
         setCat(await api.cargarCatalogos())
